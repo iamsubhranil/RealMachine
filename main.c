@@ -109,28 +109,38 @@ int main(){
     uint32_t offset = 0;
     
     // Initialtization
+    // mov #0, r0
     write_op(ins, &offset, OP_MOV, 0, 0);
+    // mov #1, r1
     write_op(ins, &offset, OP_MOV, 1, 1);
+    // mov #100000000, r2
     write_op(ins, &offset, OP_MOV, 100000000, 2);
     // Move string to memory
     for(uint32_t i = 0;str[i] != '\0';i++){
+        // save #str[i], @450 + (i*4)
         write_op(ins, &offset, OP_SAVE, str[i], 450 + (i*4));
     }
     // Save the jump offset
     uint32_t jmp = offset;
     // Increment r0
+    // add r1, r0
     write_op(ins, &offset, OP_ADD, 1, 0);
     // Jump while r0 < r2
+    // jlt r0, r2, @jmp
     write_op(ins, &offset, OP_JLT, 0, 2, jmp);
     // Print the string
     for(uint32_t i = 0;str[i] != '\0';i++){
+        // printc @450 + (i*4)
         write_op(ins, &offset, OP_PRINTC, 450 + (i*4));
     }
-    // Save r0 to @111
+    // Save r0 to @446
+    // store r0, @446
     write_op(ins, &offset, OP_STORE, 0, 446);
     // Print the value stored at 111
+    // print @446
     write_op(ins, &offset, OP_PRINT, 446);
     // Halt
+    // halt
     write_op(ins, &offset, OP_HALT);
     
     rm_write_mem(machine, ins, offset, 0);
