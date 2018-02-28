@@ -184,4 +184,24 @@ The parser and code generator will be implemented later, after the core vm is de
 Compiler
 ========
 
-The parser should be able to handle labeling, and both forward and backward labeling also.
+The parser should be able to handle labeling, and both forward and backward labeling also. It should go something like this :
+
+```
+jmp @skip
+label:
+savei 116
+skip:
+...
+jlt r1, r0, @jmp
+...
+jmp:
+print @label
+```
+
+Label redefinition will not be allowed. The core vm should not know anything about labeling whatsoever. The parser/compiler should maintain a table which will basically contain the following information in each entry :
+
+(label_name, reference_offset[], label_offset)
+
+After the whole program is parsed, the compiler will resolve and refill the addresses from where the label is referenced by the address of the label. If any label offset stays empty even after full compilation of the program, it will be reported back as error.
+
+Also, the `savei` instruction will just be a syntactic sugar. The parser will put the operand value in the given argument at the offset of the instruction. Care should be taken, i.e. `jmp`s should be placed accordingly not to accidentally trying to execute a data block, which will result in undefined behavior.
