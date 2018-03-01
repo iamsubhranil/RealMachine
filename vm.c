@@ -46,12 +46,6 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
 
     static uint8_t instruction = 0;
 
-    static uint32_t instructionLength[] = {
-        #define OPCODE(a, length, b) length,
-        #include "opcodes.h"
-        #undef OPCODE
-    };
-
     #define READ_BYTE(x) machine->memory[x]
     #define READ_WORD(x) ((READ_BYTE(x) << 8) | (READ_BYTE(x + 1)))
     #define READ_LONG(x) ((READ_WORD(x) << 16) | (READ_WORD(x + 2)))
@@ -94,12 +88,12 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
 
     #endif
 
-    #define INCR_PC() machine->PC += instructionLength[instruction];
+    #define INCR_PC(x) machine->PC += x
 
     #define BINARY(x) \
             regl(READ_BYTE(machine->PC + 2)) = regl(READ_BYTE(machine->PC + 1)) x \
                                 regl(READ_BYTE(machine->PC + 2)); \
-            INCR_PC(); \
+            INCR_PC(3); \
             DISPATCH()
 
     #define BICONDITIONAL(x) \
@@ -107,7 +101,7 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
                 machine->PC = READ_LONG(machine->PC + 3); \
                 DISPATCH(); \
             } \
-            INCR_PC(); \
+            INCR_PC(7); \
             DISPATCH()
 
     #define STATUS_JUMP(x) \
@@ -115,12 +109,12 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
                 machine->PC = READ_BYTE(machine->PC + 1); \
                 DISPATCH(); \
             } \
-            INCR_PC(); \
+            INCR_PC(5); \
             DISPATCH();
 
     #define SHIFT(x) \
             regl(READ_BYTE(machine->PC + 1)) = regl(READ_BYTE(machine->PC + 1)) x READ_LONG(machine->PC + 2); \
-            INCR_PC(); \
+            INCR_PC(6); \
             DISPATCH();
 
     INTERPRET_LOOP
@@ -139,7 +133,7 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             BINARY(|);
         CASE(not):
             regl(READ_BYTE(machine->PC + 1)) = ~regl(READ_BYTE(machine->PC + 1));
-            INCR_PC();
+            INCR_PC(2);
             DISPATCH();
         CASE(lshift):
             SHIFT(<<);
@@ -147,27 +141,27 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             SHIFT(>>);
         CASE(load):
             regl(READ_BYTE(machine->PC + 5)) = READ_LONG(READ_LONG(machine->PC + 1));
-            INCR_PC();
+            INCR_PC(6);
             DISPATCH();
         CASE(store):
             WRITE_LONG(READ_LONG(machine->PC + 2), regl(READ_BYTE(machine->PC + 1)));
-            INCR_PC();
+            INCR_PC(6);
             DISPATCH();
         CASE(mov):
             regl(READ_BYTE(machine->PC + 5)) = READ_LONG(machine->PC + 1);
-            INCR_PC();
+            INCR_PC(6);
             DISPATCH();
         CASE(save):
             WRITE_LONG(READ_LONG(machine->PC + 5), READ_LONG(machine->PC + 1));
-            INCR_PC();
+            INCR_PC(9);
             DISPATCH();
         CASE(print):
             printf("%" PRIu32, (uint32_t)READ_LONG(READ_LONG(machine->PC + 1)));
-            INCR_PC();
+            INCR_PC(5);
             DISPATCH();
         CASE(printc):
             printf("%c", READ_LONG(READ_LONG(machine->PC + 1)));
-            INCR_PC();
+            INCR_PC(5);
             DISPATCH();
         CASE(jeq):
             BICONDITIONAL(==);
@@ -186,7 +180,7 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             DISPATCH();
         CASE(clrsr):
             machine->SR = 0;
-            INCR_PC();
+            INCR_PC(1);
             DISPATCH();
         CASE(halt):
             return;
