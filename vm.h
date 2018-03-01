@@ -10,7 +10,7 @@ typedef union{
 } Register;
 
 typedef enum{
-    #define OPCODE(name) OP_##name,
+    #define OPCODE(name, a, b) OP_##name,
     #include "opcodes.h"
     #undef OPCODE
 } Code;

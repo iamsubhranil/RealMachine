@@ -66,7 +66,7 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
     #ifdef REAL_COMPUTED_GOTO
 
     static void* dispatchTable[] = {
-        #define OPCODE(name) &&code_##name,
+        #define OPCODE(name, a, b) &&code_##name,
         #include "opcodes.h"
         #undef OPCODE
     };
@@ -119,70 +119,70 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
 
     INTERPRET_LOOP
     {
-        CASE(ADD):
+        CASE(add):
             BINARY(+);
-        CASE(SUB):
+        CASE(sub):
             BINARY(-);
-        CASE(MUL):
+        CASE(mul):
             BINARY(*);
-        CASE(DIV):
+        CASE(div):
             BINARY(/);
-        CASE(AND):
+        CASE(and):
             BINARY(&);
-        CASE(OR):
+        CASE(or):
             BINARY(|);
-        CASE(NOT):
+        CASE(not):
             regl(READ_BYTE(machine->PC + 1)) = ~regl(READ_BYTE(machine->PC + 1));
             INCR_PC(2);
             DISPATCH();
-        CASE(LSHIFT):
+        CASE(lshift):
             SHIFT(<<);
-        CASE(RSHIFT):
+        CASE(rshift):
             SHIFT(>>);
-        CASE(LOAD):
+        CASE(load):
             regl(READ_BYTE(machine->PC + 5)) = READ_LONG(READ_LONG(machine->PC + 1));
             INCR_PC(6);
             DISPATCH();
-        CASE(STORE):
+        CASE(store):
             WRITE_LONG(READ_LONG(machine->PC + 2), regl(READ_BYTE(machine->PC + 1)));
             INCR_PC(6);
             DISPATCH();
-        CASE(MOV):
+        CASE(mov):
             regl(READ_BYTE(machine->PC + 5)) = READ_LONG(machine->PC + 1);
             INCR_PC(6);
             DISPATCH();
-        CASE(SAVE):
+        CASE(save):
             WRITE_LONG(READ_LONG(machine->PC + 5), READ_LONG(machine->PC + 1));
             INCR_PC(9);
             DISPATCH();
-        CASE(PRINT):
+        CASE(print):
             printf("%" PRIu32, (uint32_t)READ_LONG(READ_LONG(machine->PC + 1)));
             INCR_PC(5);
             DISPATCH();
-        CASE(PRINTC):
+        CASE(printc):
             printf("%c", READ_LONG(READ_LONG(machine->PC + 1)));
             INCR_PC(5);
             DISPATCH();
-        CASE(JEQ):
+        CASE(jeq):
             BICONDITIONAL(==);
-        CASE(JNE):
+        CASE(jne):
             BICONDITIONAL(!=);
-        CASE(JGT):
+        CASE(jgt):
             BICONDITIONAL(>);
-        CASE(JLT):
+        CASE(jlt):
             BICONDITIONAL(<);
-        CASE(JOV):
+        CASE(jov):
             STATUS_JUMP(1);
-        CASE(JUN):
+        CASE(jun):
             STATUS_JUMP(2);
-        CASE(CLRPC):
+        CASE(clrpc):
             machine->PC = 0;
             DISPATCH();
-        CASE(CLRSR):
+        CASE(clrsr):
             machine->SR = 0;
             INCR_PC(1);
             DISPATCH();
-        CASE(HALT):
+        CASE(halt):
             return;
     }
 }
