@@ -205,3 +205,48 @@ Label redefinition will not be allowed. The core vm should not know anything abo
 After the whole program is parsed, the compiler will resolve and refill the addresses from where the label is referenced by the address of the label. If any label offset stays empty even after full compilation of the program, it will be reported back as error.
 
 Also, the `savei` instruction will just be a syntactic sugar. The parser will put the operand value in the given argument at the offset of the instruction. Care should be taken, i.e. `jmp`s should be placed accordingly not to accidentally trying to execute a data block, which will result in undefined behavior.
+
+Lexical Analysis
+================
+
+Initial scanner implemented for full syntax, including labels. ':' is not a valid token in RM, except only when followed by a string, which then renders the string as a label token to the scanner. ':' makes a new token of type TOKEN_labelDefine and '@' makes a new token of type TOKEN_labelAccess. If any ambiguous usage of them is encountered, i.e. like the following
+
+```
+jne r0, r1, @label:
+```
+
+the scanner will always first check for '@' and make the next token 'label' of type labelAccess. In the next iteration, when ':' is scanned, it will be reported as an unexpected symbol.
+
+In debug mode, there should be support for scantime messages and parsetime messages. They will be special statements which will direct the parser or the scanner to print a specific message to stdout, without explicit scanning and parsing of the statements themselves.
+
+For scan time information, the following syntax can be used :
+
+```
+( Info : Next line should not scan successfully! )
+wrong_statement
+```
+
+To display parse time messages, one can use curly braces '{}', as in :
+
+```
+{ Warning : Following line should not parse successfully }
+jne r0, jmplabel:, r1
+```
+
+However, they must be optional, and should have a macro to disable them easily, while keeping rest of the scanner and parser intact. Moreover, scan time messages can appear anywhere in the program, but parse time message must be in the start of a new line.
+
+For comments, one can use '[]', and they can spread over multiple lines.
+
+```
+
+jne r0, r1, @label [this is a small comment]
+[comments can appear here]
+print @32
+[comments
+    CAN
+span over multiple
+lines too]
+mov #3232, r0
+```
+
+Blank lines are allowed, and should be ignored gracefully by the scanner.
