@@ -86,8 +86,6 @@ static Token makeNumber(){
     return makeToken(TOKEN_number);
 }
 
-#define ALLOW_LEXER_MESSAGES
-
 static Token nextToken(){
     start = present;
     if(present == length)
