@@ -78,3 +78,6 @@ OPCODE(clrsr, 1, 5)
 
 // halt
 OPCODE(halt, 1, 4)
+
+// const #323
+OPCODE(const, 4, 5)

@@ -81,6 +81,8 @@ void debugInstruction(uint8_t *memory, uint32_t *offset){
         case OP_clrpc:
         case OP_clrsr:
             break;
+        case OP_const:
+            printf("#%" PRIu32, READ_LONG(*offset + 1));
     }
     *offset += instructionLength[opcode];
     printf("\n");

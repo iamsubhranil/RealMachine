@@ -184,5 +184,7 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             DISPATCH();
         CASE(halt):
             return;
+        CASE(const): // this should never be the case
+            DISPATCH();
     }
 }

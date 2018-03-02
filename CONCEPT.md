@@ -134,10 +134,10 @@ To store a value in memory directly, one can use "save", as in
 save #2362, @46 // save the value 2362 at offset 46
 ```
 
-To store a value in the bytecode directly at the present location, one can use "savei", as in
+To store a value in the bytecode directly at the present location, one can use "const", as in
 
 ```
-savei #2674 // store 2674 in present offset
+const #2674 // store constant 2674 in present offset
 ```
 
 As usual, these too, will have their b and w counterparts.
