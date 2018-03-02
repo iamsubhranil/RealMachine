@@ -209,13 +209,7 @@ Also, the `savei` instruction will just be a syntactic sugar. The parser will pu
 Lexical Analysis
 ================
 
-Initial scanner implemented for full syntax, including labels. ':' is not a valid token in RM, except only when followed by a string, which then renders the string as a label token to the scanner. ':' makes a new token of type TOKEN_labelDefine and '@' makes a new token of type TOKEN_labelAccess. If any ambiguous usage of them is encountered, i.e. like the following
-
-```
-jne r0, r1, @label:
-```
-
-the scanner will always first check for '@' and make the next token 'label' of type labelAccess. In the next iteration, when ':' is scanned, it will be reported as an unexpected symbol.
+Initial scanner implemented for full syntax, including labels. ':' is also a valid token in RM, but the parser will scream if it is used for anything except for a label declaration.
 
 In debug mode, there should be support for scantime messages and parsetime messages. They will be special statements which will direct the parser or the scanner to print a specific message to stdout, without explicit scanning and parsing of the statements themselves.
 

@@ -17,8 +17,8 @@ typedef enum{
     ET(number),
     ET(eof),
     ET(unknown),
-    ET(labelDefine),
-    ET(labelAccess),
+    ET(label),
+    ET(colon),
 #ifdef RM_ALLOW_PARSE_MESSAGES
     ET(parseMessage),
 #endif

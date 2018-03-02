@@ -60,24 +60,9 @@ static Token makeKeyword(){
         }
     }
 
-    // Checks to see if this token might be a label
+    // It may be a label, leave it to the parser
     
-    // See if there is any '@' previously in the same line
-    if(line == lastToken.line && lastToken.type == TOKEN_address)
-        return makeToken(TOKEN_labelAccess);
-
-    // See if there is a ':' next
-    size_t temp = present;
-    while(source[temp] == ' ' || source[temp] == '\t')
-        temp++;
-    if(source[temp] == ':'){
-        temp++;
-        present = temp;
-        return makeToken(TOKEN_labelDefine);
-    }
-
-    // Nope
-    return error();
+    return makeToken(TOKEN_label);
 }
 
 static Token makeNumber(){
@@ -108,6 +93,9 @@ static Token nextToken(){
         case '@':
             present++;
             return makeToken(TOKEN_address);
+        case ':':
+            present++;
+            return makeToken(TOKEN_colon);
         case '#':
             present++;
             return makeToken(TOKEN_hash);
@@ -182,8 +170,8 @@ const char* tokenStrings[] = {
     ET(number),
     ET(eof),
     ET(unknown),
-    ET(labelDefine),
-    ET(labelAccess),
+    ET(label),
+    ET(colon),
 #ifdef RM_ALLOW_PARSE_MESSAGES
     ET(parseMessage),
 #endif
@@ -191,6 +179,7 @@ const char* tokenStrings[] = {
     #include "opcodes.h"
     #undef OPCODE
 };
+#undef ET
 
 static void printToken(Token t){
     printf("\n%11s(%10s)\tline : %2zd", tokenStrings[t.type], t.string, t.line);
