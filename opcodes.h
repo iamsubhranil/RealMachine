@@ -81,3 +81,8 @@ OPCODE(halt, 1, 4)
 
 // const #323
 OPCODE(const, 4, 5)
+
+// mark an offset as non-executable memory
+// this is not accessible by a source program,
+// only to use in internals
+OPCODE(nex, 1, 0)

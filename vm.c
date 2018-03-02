@@ -22,6 +22,11 @@ bool rm_init(VirtualMachine *machine, uint32_t mem){
     uint8_t *m = (uint8_t *)malloc(sizeof(uint8_t) * mem);
     if(m == NULL)
         return false;
+
+    // Initially mark all memory as non-executable
+    for(uint32_t i = 0;i < mem;i++)
+        m[i] = OP_nex;
+
     machine->memory = m;
     machine->memSize = mem;
     return true;
@@ -186,5 +191,8 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             return;
         CASE(const): // this should never be the case
             DISPATCH();
+        CASE(nex):
+            printf("\n[Runtime error] Trying to execute non-executable code at offset %04" PRIu32 "!\n", machine->PC);
+            return;
     }
 }

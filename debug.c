@@ -83,6 +83,10 @@ void debugInstruction(uint8_t *memory, uint32_t *offset){
             break;
         case OP_const:
             printf("#%" PRIu32, READ_LONG(*offset + 1));
+            break;
+        case OP_nex:
+            printf("Error : Code not executable!");
+            break;
     }
     *offset += instructionLength[opcode];
     printf("\n");
