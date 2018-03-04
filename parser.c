@@ -204,7 +204,7 @@ bool consume(TokenType type){
         return true;
     }
     else{
-        err("Unexpected token : '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET
+        err("Unexpected token : '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET
                 "', Expected : '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "'", presentToken.string,
                 tokenStrings[type]);
         print_token_source(presentToken, 1);
@@ -221,7 +221,7 @@ static void reg(){
         char *end;
         uint64_t num = strtoll(previousToken.string, &end, 10);
         if(num > 7){
-            err("Register number must be < 8, received " ANSI_FONT_BOLD "%" PRIu64 ANSI_COLOR_RESET, num);
+            err("Register number must be < 8, received " ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%" PRIu64 ANSI_COLOR_RESET, num);
             print_token_source(previousToken, 1);
             hasErrors++;
             writeByte(0);
@@ -236,7 +236,7 @@ static bool num(){
         char *end;
         uint64_t num = strtoll(previousToken.string, &end, 10);
         if(num > UINT32_MAX){
-            err("Memory reference must be < %" PRIu32 ", received " ANSI_FONT_BOLD "%" PRIu64 ANSI_COLOR_RESET, 
+            err("Memory reference must be < %" PRIu32 ", received " ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%" PRIu64 ANSI_COLOR_RESET, 
                                                          UINT32_MAX, num);
             print_token_source(previousToken, 1);
             hasErrors++;
@@ -448,7 +448,7 @@ bool parse_and_emit(TokenList l, char *s, uint8_t *mem, uint32_t memS, uint32_t 
                     break;
 #endif
                 default:
-                    err("Bad token : '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "'", presentToken.string);
+                    err("Bad token : '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "'", presentToken.string);
                     print_token_source(presentToken, 1);
                     hasErrors++;
                     advance();
