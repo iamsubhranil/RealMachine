@@ -84,6 +84,7 @@ static Token nextToken(){
     switch(source[present]){
         case ' ':
         case '\t':
+        case '\r':
             present++;
             return nextToken();
         case '\n':
