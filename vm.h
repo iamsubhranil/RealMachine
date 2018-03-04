@@ -25,8 +25,6 @@ typedef struct{
 
 VirtualMachine* rm_new();
 bool rm_init(VirtualMachine *machine, uint32_t memSize);
-bool rm_write_mem(VirtualMachine *machine, uint8_t *data, uint32_t size, uint32_t offset);
-void rm_write_op(uint8_t *memory, uint32_t *offset, int opcode, ...);
 void rm_run(VirtualMachine *machine, uint32_t offset);
 void rm_free(VirtualMachine *machine);
 
