@@ -402,6 +402,7 @@ bool parse_and_emit(TokenList l, uint8_t *mem, uint32_t memS, uint32_t offset){
 #endif
                 default:
                     printf("\n[Compilation error][line %zd] Bad token : '%s'", presentLine, presentToken.string);
+                    hasErrors++;
                     advance();
                     break;
         }
