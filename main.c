@@ -1,11 +1,62 @@
 #include "vm.h"
 #include "debug.h"
 #include "bytecode.h"
+#include "lexer.h"
+#include "parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 
 int main(){
+    VirtualMachine *machine = rm_new();
+    rm_init(machine, 1024);
+    const char source [] = "mov #0, r0"
+                            "\nmov #5, r1"
+                            "\nmov #1, r2"
+                            "\nmul r3, r4"
+                            "\n{ This is a parse time message \n}"
+                            "\nloop : add r2, r0"
+                            "\nstore r0, @var"
+                            "\n( This is a scan time message \n)"
+                            "\nprint @var"
+                            "\njlt r0, r1, @loop"
+                            "\nhalt"
+                            "\nvar : const #0";
+#ifdef DEBUG
+    printf("\n===== Source =====\n%s\n", source);
+    printf("\n===== Scanning =====\n");
+#endif
+    TokenList l = tokens_scan(source);
+#ifdef DEBUG
+    printf("\n===== Tokens =====\n");
+    lexer_print_tokens(l);
+    printf("\n");
+    printf("\n===== Parsing and Compiling =====\n");
+#endif
+    if(l.hasError==0 && parse_and_emit(l, machine->memory, 1024, 0)){
+#ifdef DEBUG
+        uint32_t offset = 0;
+        printf("\n");
+        printf("\n===== Compiled chunk =====\n");
+        while(machine->memory[offset] != OP_nex)
+            debugInstruction(machine->memory, &offset);
+        printf("\n");
+        printf("\n===== Executing =====\n");
+#endif
+        rm_run(machine, 0);
+        printf("\n");
+    }
+    else
+        printf("\nUnable to start virtual machine!\n");
+
+#ifdef DEBUG
+    printf("\n===== Execution Complete =====\n");
+#endif
+    rm_free(machine);
+    tokens_free(l);
+}
+
+int test(){
     VirtualMachine *machine = rm_new();
     char str[] = "After loop, value of r0 is : ";
     rm_init(machine, 1024);
