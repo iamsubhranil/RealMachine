@@ -15,10 +15,12 @@ int main(){
     VirtualMachine *machine = rm_new();
     rm_init(machine, 1024);
     char source[] = "mov #0, r0"
-        "\nmov #00000000, r1"
+        "\nmov #100000000, r1"
         "\nmov #1, r2"
         "\nloop : add r2, r0"
         "\njlt r0, r1, @loop"
+        "\nstore r0, @var"
+        "\nprint @var"
         "\nhalt"
         "\nvar : const #0";
 #ifdef DEBUG
