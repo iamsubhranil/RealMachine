@@ -4,7 +4,9 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <inttypes.h>
+
 #include "lexer.h"
+#include "display.h"
 
 static Token keywords[] = {
     #define ET(x) TOKEN_##x
@@ -38,7 +40,7 @@ static Token makeToken(TokenType type){
 
 static Token error(){
     Token m = makeToken(TOKEN_unknown);
-    printf("\n[Error] Unexpected token '%s' at line %zd !", m.string, m.line);
+    lnerr("Unexpected token '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "'!", m, m.string);
     return m;
 }
 
@@ -141,6 +143,7 @@ TokenList tokens_scan(const char* line){
     length = strlen(source);
     present = 0;
     start = 0;
+
     TokenList list = {NULL, 0, 0};
     while(present < length){
         Token t = nextToken();
@@ -187,14 +190,19 @@ const char* tokenStrings[] = {
 #undef ET
 
 static void printToken(Token t){
-    printf("\n%11s(%10s)\tline : %2zd", tokenStrings[t.type], t.string, t.line);
+    pblue(" %s", tokenStrings[t.type]);
+    pylw("(%s) \t", t.string);
 }
 
 void lexer_print_tokens(TokenList list){
-    for(uint32_t i = 0;i < list.count;i++)
+    size_t prevLine = 0;
+    for(uint32_t i = 0;i < list.count;i++){
+        if(prevLine != list.tokens[i].line){
+            pmgn(ANSI_FONT_BOLD "\n<line %zd>", list.tokens[i].line);
+            prevLine = list.tokens[i].line;
+        }
         printToken(list.tokens[i]);
-    if(list.hasError)
-        printf("\n[Warning] Scanning completed with %" PRIu32 " errors!", list.hasError);
+    }
 }
 
 #endif

@@ -1,5 +1,10 @@
 #include "vm.h"
+#include "display.h"
+
+#ifdef DEBUG_INSTRUCTIONS
 #include "debug.h"
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -185,7 +190,8 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
         CASE(const): // this should never be the case
             DISPATCH();
         CASE(nex):
-            printf("\n[Runtime error] Trying to execute non-executable code at offset %04" PRIu32 "!\n", machine->PC);
+            pred("\n[Runtime error] Trying to execute non-executable code at offset " 
+                    ANSI_FONT_BOLD "%04" PRIu32 ANSI_COLOR_RESET "!\n", machine->PC);
             return;
     }
 }

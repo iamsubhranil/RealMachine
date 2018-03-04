@@ -1,5 +1,7 @@
 #include "debug.h"
 #include "vm.h"
+#include "display.h"
+
 #include <inttypes.h>
 #include <stdio.h>
 
@@ -20,16 +22,24 @@ void debugRegister(VirtualMachine *machine, uint8_t index){
     printf("r%" PRIu8 " : %08x  %08x  %08x  %08x\n", index, r.byte[3], r.byte[2], r.byte[1], r.byte[0]);
 }
 
+#define preg(x) pcyn("r%" PRIu8, READ_BYTE(x))
+#define pmem(x) pylw("@%" PRIu32, READ_LONG(x))
+#define pimm(x) pmgn("#%" PRIu32, READ_LONG(x))
+#define pcmm() printf(",\t")
+
 void debugInstruction(uint8_t *memory, uint32_t *offset){
-    printf("%04" PRIu32 "\t", *offset);
+    printf(ANSI_FONT_BOLD);
+    pblue("%04" PRIu32 "\t", *offset);
     uint8_t opcode = memory[*offset];
+    
+    printf(ANSI_FONT_BOLD);
     if(opcode > sizeof(opStrings)){
-        printf("UNKNWN\n");
+        pred("UNKNWN\n");
         (*offset)++;
         return;
     }
     else
-        printf("%6s\t", opStrings[opcode]);
+        pgrn("%6s\t", opStrings[opcode]);
 
     #define READ_BYTE(x) memory[x]
     #define READ_WORD(x) ((READ_BYTE(x) << 8) | (READ_BYTE(x + 1)))
@@ -42,50 +52,69 @@ void debugInstruction(uint8_t *memory, uint32_t *offset){
         case OP_div:
         case OP_and:
         case OP_or:
-            printf("r%" PRIu8 ",\tr%" PRIu8, READ_BYTE(*offset + 1), READ_BYTE(*offset + 2));
+            // reg --> cyan
+            // mem --> yellow
+            // imm --> magenta
+            preg(*offset + 1);
+            pcmm();
+            preg(*offset + 2);
             break;
         case OP_not:
-            printf("r%" PRIu8, READ_BYTE(*offset + 1));
+            preg(*offset + 1);
             break;
         case OP_lshift:
         case OP_rshift:
-            printf("r%" PRIu8 ",\t#%" PRIu32, READ_BYTE(*offset + 1), READ_LONG(*offset + 2));
+            preg(*offset + 1);
+            pcmm();
+            pimm(*offset + 2);
             break;
         case OP_load:
-            printf("@%" PRIu32 ",\tr%" PRIu8, READ_LONG(*offset + 1), READ_BYTE(*offset + 5));
+            pmem(*offset + 1);
+            pcmm();
+            preg(*offset + 5);
             break;
         case OP_store:
-            printf("r%" PRIu8 ",\t@%" PRIu32, READ_BYTE(*offset + 1), READ_LONG(*offset + 2));
+            preg(*offset + 1);
+            pcmm();
+            pmem(*offset + 2);
             break;
         case OP_mov:
-            printf("#%" PRIu32 ",\tr%" PRIu8, READ_LONG(*offset + 1), READ_BYTE(*offset + 5));
+            pimm(*offset + 1);
+            pcmm();
+            preg(*offset + 5);
             break;
         case OP_save:
-            printf("#%" PRIu32 ",\t@%" PRIu32, READ_LONG(*offset + 1), READ_LONG(*offset + 5));
+            pimm(*offset + 1);
+            pcmm();
+            pmem(*offset + 5);
             break;
         case OP_print:
         case OP_printc:
-            printf("@%" PRIu32, READ_LONG(*offset + 1));
+            pmem(*offset + 1);
             break;
         case OP_jeq:
         case OP_jne:
         case OP_jgt:
         case OP_jlt:
-            printf("r%" PRIu8 ",\tr%" PRIu8 ",\t@%" PRIu32, READ_BYTE(*offset + 1), READ_BYTE(*offset + 2), READ_LONG(*offset + 3));
+            preg(*offset + 1);
+            pcmm();
+            preg(*offset + 2);
+            pcmm();
+            pmem(*offset + 3);
             break;
         case OP_jov:
         case OP_jun:
-            printf("@%" PRIu8, READ_LONG(*offset + 1));
+            pmem(*offset + 1);
             break;
         case OP_halt:
         case OP_clrpc:
         case OP_clrsr:
             break;
         case OP_const:
-            printf("#%" PRIu32, READ_LONG(*offset + 1));
+            pimm(*offset + 1);
             break;
         case OP_nex:
-            printf("Error : Code not executable!");
+            pred("[Error] Code not executable!");
             break;
     }
     *offset += instructionLength[opcode];

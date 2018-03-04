@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "bytecode.h"
 #include "vm.h"
+#include "display.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -59,7 +60,7 @@ static void declareLabel(Token t, uint32_t declOffset){
                 labels[i].line = t.line;
             }
             else{
-                printf("\n[Compilation error][line %zd] Label '%s' is already defined!", t.line, t.string);
+                lnerr("Label '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "' is already defined!", t, t.string);
                 hasErrors++;
             }
             return;
@@ -86,12 +87,14 @@ static void addReference(Token label, uint32_t reference){
 
 static void checkLabels(){
     for(uint32_t i = 0;i < labelCount;i++){
+            Token t;
+            t.line = labels[i].line;
         if(labels[i].isInit == 0){
-            printf("\n[Compilation error][line %zd] Label '%s' used but not defined!", labels[i].line, labels[i].label);
+            lnerr("Label '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "' used but not defined!", t, labels[i].label);
             hasErrors++;
         }
         else if(labels[i].refCount == 0){
-            printf("\n[Compilation warning][line %zd] Label '%s' defined but not used!", labels[i].line, labels[i].label);
+            lnwarn("Label '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "' defined but not used!", t, labels[i].label);
         }
         else{
             uint32_t bak = presentOffset;
@@ -125,7 +128,7 @@ static void advance(){
         presentLine = presentToken.line;
     }
     else{
-        printf("\n[Compilation error] Unexpected end of file!");
+        lnerr("Unexpected end of file!", presentToken);
         hasErrors++;
     }
 }
@@ -163,7 +166,8 @@ bool consume(TokenType type){
         return true;
     }
     else{
-        printf("\n[Compilation error][line %zd] Unexpected token : '%s', Expected : '%s'", presentLine, presentToken.string,
+        lnerr("Unexpected token : '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET
+                "', Expected : '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "'", presentToken, presentToken.string,
                 tokenStrings[type]);
         if(presentToken.type != TOKEN_eof)
             advance();
@@ -178,7 +182,7 @@ static void reg(){
         char *end;
         uint64_t num = strtoll(previousToken.string, &end, 10);
         if(num > 7){
-            printf("\n[Compilation error][line %zd] Register number must be < 8, received %" PRIu64, presentLine, num);
+            lnerr("Register number must be < 8, received " ANSI_FONT_BOLD "%" PRIu64 ANSI_COLOR_RESET, previousToken, num);
             hasErrors++;
             writeByte(0);
         }
@@ -192,8 +196,8 @@ static bool num(){
         char *end;
         uint64_t num = strtoll(previousToken.string, &end, 10);
         if(num > UINT32_MAX){
-            printf("\n[Compilation error][line %zd] Memory reference must be < %" PRIu32 ", received %" PRIu64, 
-                                                        previousToken.line, UINT32_MAX, num);
+            lnerr("Memory reference must be < %" PRIu32 ", received " ANSI_FONT_BOLD "%" PRIu64 ANSI_COLOR_RESET, 
+                                                        previousToken, UINT32_MAX, num);
             hasErrors++;
             writeLong(0);
         }
@@ -401,7 +405,7 @@ bool parse_and_emit(TokenList l, uint8_t *mem, uint32_t memS, uint32_t offset){
                     break;
 #endif
                 default:
-                    printf("\n[Compilation error][line %zd] Bad token : '%s'", presentLine, presentToken.string);
+                    lnerr("Bad token : '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "'", presentToken, presentToken.string);
                     hasErrors++;
                     advance();
                     break;
@@ -409,7 +413,7 @@ bool parse_and_emit(TokenList l, uint8_t *mem, uint32_t memS, uint32_t offset){
     }
     checkLabels();
     if(hasErrors){
-        printf("\n[Compilation error] Compilation failed with %" PRIu32 " errors!", hasErrors);
+        err("Compilation failed with " ANSI_FONT_BOLD  ANSI_COLOR_RED "%" PRIu32 ANSI_COLOR_RESET " errors!", hasErrors);
         return false;
     }
     return true;
