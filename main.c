@@ -8,16 +8,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include <inttypes.h>
 
 int main(){
     VirtualMachine *machine = rm_new();
     rm_init(machine, 1024);
-    const char source [] = "mov #0, r3"
-        "\nmov #100000000, r1"
+    char source[] = "mov #0, r0"
+        "\nmov #00000000, r1"
         "\nmov #1, r2"
         "\nloop : add r2, r0"
-        "\njlt r0, r1, @loo"
+        "\njlt r0, r1, @loop"
         "\nhalt"
         "\nvar : const #0";
 #ifdef DEBUG
@@ -33,7 +34,7 @@ int main(){
     dbg("===== Parsing and Compiling =====\n");
 #endif
     if(l.hasError==0){
-        if(parse_and_emit(l, machine->memory, 1024, 0)){
+        if(parse_and_emit(l, source, machine->memory, 1024, 0)){
 #ifdef DEBUG
             uint32_t offset = 0;
             printf("\n");

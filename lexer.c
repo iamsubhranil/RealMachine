@@ -10,7 +10,7 @@
 
 static Token keywords[] = {
     #define ET(x) TOKEN_##x
-    #define OPCODE(name, a, length) {#name, length, 0, ET(name)},
+    #define OPCODE(name, a, length) {#name, length, 0, 0, 0, ET(name)},
     #include "opcodes.h"
     #undef OPCODE
     #undef ET
@@ -34,6 +34,8 @@ static Token makeToken(TokenType type){
     strncpy(t.string, &(source[start]), present-start);
     t.string[present - start] = '\0';
     t.length = present - start;
+    t.start = start;
+    t.end = present - 1;
     lastToken = t;
     return t;
 }

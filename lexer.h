@@ -32,6 +32,8 @@ typedef struct{
     char* string;
     uint8_t length;
     size_t line;
+    size_t start;
+    size_t end;
     TokenType type;
 } Token;
 
