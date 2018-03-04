@@ -43,3 +43,9 @@ typedef struct{
 
 TokenList tokens_scan(const char *source);
 void tokens_free(TokenList list);
+
+//#define DEBUG
+
+#ifdef DEBUG
+void lexer_print_tokens(TokenList list);
+#endif

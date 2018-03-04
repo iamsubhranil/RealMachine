@@ -146,6 +146,8 @@ TokenList tokens_scan(const char* line){
         list.hasError += t.type == TOKEN_unknown;
         addToken(&list, t);
     }
+    if(list.tokens[list.count - 1].type != TOKEN_eof)
+        addToken(&list, makeToken(TOKEN_eof));
     free(source);
     return list;
 }
@@ -160,6 +162,8 @@ void tokens_free(TokenList list){
 /* The code below is for testing and debugging purposes.
  * =====================================================
  */
+
+#ifdef DEBUG
 
 #define ET(x) #x
 const char* tokenStrings[] = { 
@@ -185,25 +189,11 @@ static void printToken(Token t){
     printf("\n%11s(%10s)\tline : %2zd", tokenStrings[t.type], t.string, t.line);
 }
 
-static void printTokens(TokenList list){
+void lexer_print_tokens(TokenList list){
     for(uint32_t i = 0;i < list.count;i++)
         printToken(list.tokens[i]);
     if(list.hasError)
         printf("\n[Warning] Scanning completed with %" PRIu32 " errors!", list.hasError);
 }
 
-static void test(){
-    TokenList l = tokens_scan("mov #3242, r0"
-                "\n(this is a scan time message) jmplabel :"
-                "\nmov r0, r1, @jmplabel"
-                "\n{this is a parse time message}"
-                "\n"
-                "\nstore r0, @ewe [ this is a comment ]"
-                "\n[this"
-                "\n is a multiline"
-                "\ncomment]"
-                "\nprint @322");
-    printTokens(l);
-    tokens_free(l);
-    printf("\n");
-}
+#endif
