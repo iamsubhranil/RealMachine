@@ -12,11 +12,11 @@ static uint32_t present = 0, length = 0, presentOffset = 0, memSize = 0, hasErro
 static uint8_t *memory;
 
 static void writeByte(uint8_t byte){
+    if(presentOffset >= memSize){
+        memory = (uint8_t *)realloc(memory, sizeof(uint8_t) * (presentOffset + 1));
+        memSize++;
+    }
     if(!hasErrors){
-        if(presentOffset >= memSize){
-            memory = (uint8_t *)realloc(memory, sizeof(uint8_t) * (presentOffset + 1));
-            memSize++;
-        }
         bc_write_byte(memory, &presentOffset, byte);
     }
     else
