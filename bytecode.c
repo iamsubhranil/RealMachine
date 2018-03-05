@@ -1,7 +1,11 @@
 #include <stdint.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include "display.h"
 
 #include "vm.h"
+#include "bytecode.h"
 
 void bc_write_byte(uint8_t *memory, uint32_t *offset, uint8_t data){
     memory[*offset] = data;
@@ -18,6 +22,24 @@ static uint8_t instructionLength[] = {
     #include "opcodes.h"
     #undef OPCODE
 };
+
+Data bc_read_from_disk(const char *inputFile){
+    return (Data){NULL, 0};
+}
+
+bool bc_save_to_disk(const char *outputFile, uint8_t *memory, uint32_t size){ 
+    FILE *save = fopen(outputFile, "w");
+    if(!save){
+        err("Unable to open file for saving : " ANSI_COLOR_RED ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET " !\n", outputFile);
+        return false;
+    }
+#ifdef DEBUG
+    dbg("Writing to file '%s'\n", outputFile);
+#endif
+    fwrite(memory, size, 1, save);
+    fclose(save);
+    return true;
+}
 
 void bc_write_op(uint8_t *memory, uint32_t *offset, int opcode, ...){
     if(opcode == OP_const)
@@ -107,12 +129,12 @@ void bc_write_op(uint8_t *memory, uint32_t *offset, int opcode, ...){
         case OP_nex:
                     break;
         case OP_const:{
-                        uint32_t val = va_arg(args, uint32_t);
-                        WRITE_LONG(*offset, val);
-                        break;
+                          uint32_t val = va_arg(args, uint32_t);
+                          WRITE_LONG(*offset, val);
+                          break;
                       }
     }
     *offset += instructionLength[opcode];
     va_end(args);
-    #undef WRITE_LONG
+#undef WRITE_LONG
 }
