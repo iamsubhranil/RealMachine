@@ -141,8 +141,11 @@ static Token nextToken(){
             return makeToken(TOKEN_comma);
         case '[':
             present++;
-            while(present < length && source[present] != ']')
+            while(present < length && source[present] != ']'){
+                if(source[present] == '\n')
+                    line++;
                 present++;
+            }
             if(present < length && source[present] == ']')
                 present++;
             return nextToken();
@@ -150,9 +153,12 @@ static Token nextToken(){
         case '(':
             present++;
             while(present < length && source[present] != ')'){
+                if(source[present] == '\n')
+                    line++;
                 printf("%c", source[present]);
                 present++;
             }
+            fflush(stdin);
             if(present < length && source[present] == ')')
                 present++;
             return nextToken();
@@ -161,8 +167,11 @@ static Token nextToken(){
         case '{':
             present++;
             start = present;
-            while(present < length && source[present] != '}')
+            while(present < length && source[present] != '}'){ 
+                if(source[present] == '\n')
+                    line++;
                 present++;
+            }
             if(present < length && source[present] == '}')
                 source[present] = ' ';
             return makeToken(TOKEN_parseMessage);
