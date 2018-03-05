@@ -16,11 +16,11 @@ typedef enum{
 } Code;
 
 typedef struct{
-    uint32_t registers[8];
-    uint32_t PC;
     uint8_t SR;
-    uint8_t *memory;
     uint32_t memSize;
+    uint32_t registers[8];
+    uint64_t PC;
+    uint8_t *memory;
 } VirtualMachine;
 
 VirtualMachine* rm_new();

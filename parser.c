@@ -200,7 +200,8 @@ static bool num(){
         char *end;
         uint64_t num = strtoll(previousToken.string, &end, 10);
         if(num > UINT32_MAX){
-            err("Memory reference must be < %" PRIu32 ", received " ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%" PRIu64 ANSI_COLOR_RESET, 
+            err("Long constant must be " ANSI_FONT_BOLD "<= %" PRIu32 ANSI_COLOR_RESET
+                    ", received " ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%" PRIu64 ANSI_COLOR_RESET, 
                                                          UINT32_MAX, num);
             token_print_source(previousToken, 1);
             hasErrors++;
