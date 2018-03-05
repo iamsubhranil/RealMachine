@@ -190,8 +190,8 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
         CASE(const): // this should never be the case
             DISPATCH();
         CASE(nex):
-            pred("\n[Runtime error] Trying to execute non-executable code at offset " 
-                    ANSI_FONT_BOLD "%04" PRIu32 ANSI_COLOR_RESET "!\n", machine->PC);
+            err("Trying to execute non-executable code at offset " 
+                    ANSI_FONT_BOLD ANSI_COLOR_RED "%04" PRIu32 ANSI_COLOR_RESET "!\n", machine->PC);
             return;
     }
 }
