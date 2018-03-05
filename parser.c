@@ -12,8 +12,13 @@ static uint32_t present = 0, length = 0, presentOffset = 0, memSize = 0, hasErro
 static uint8_t *memory;
 
 static void writeByte(uint8_t byte){
-    if(!hasErrors)
+    if(!hasErrors){
+        if(presentOffset >= memSize){
+            memory = (uint8_t *)realloc(memory, sizeof(uint8_t) * (presentOffset + 1));
+            memSize++;
+        }
         bc_write_byte(memory, &presentOffset, byte);
+    }
     else
         bc_write_byte(memory, &presentOffset, OP_nex);
 }
@@ -385,9 +390,9 @@ void statement_parseMessage(){
 }
 #endif
 
-bool parse_and_emit(TokenList l, uint8_t *mem, uint32_t memS, uint32_t offset){
-    memory = mem;
-    memSize = memS;
+bool parse_and_emit(TokenList l, uint8_t **mem, uint32_t *memS, uint32_t offset){
+    memory = *mem;
+    memSize = *memS;
     presentOffset = offset;
     presentToken = l.tokens[0];
     presentLine = presentToken.line;
@@ -419,6 +424,8 @@ bool parse_and_emit(TokenList l, uint8_t *mem, uint32_t memS, uint32_t offset){
                     break;
         }
     }
+    *mem = memory;
+    *memS = memSize;
     checkLabels();
     if(hasErrors){
         err("Compilation failed with " ANSI_FONT_BOLD  ANSI_COLOR_RED "%" PRIu32 ANSI_COLOR_RESET " errors!", hasErrors);
