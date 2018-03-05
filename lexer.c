@@ -42,7 +42,7 @@ static Token makeToken(TokenType type){
 
 static Token error(){
     Token m = makeToken(TOKEN_unknown);
-    lnerr("Unexpected token '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "'!", m, m.string);
+    lnerr("Unexpected character '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "'!", m, m.string);
     return m;
 }
 
