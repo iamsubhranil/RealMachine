@@ -10,7 +10,7 @@
 
 static Token keywords[] = {
     #define ET(x) TOKEN_##x
-    #define OPCODE(name, a, length) {#name, length, 0, 0, 0, ET(name)},
+    #define OPCODE(name, a, length) {#name, NULL, length, 0, 0, 0, ET(name)},
     #include "opcodes.h"
     #undef OPCODE
     #undef ET
@@ -22,12 +22,13 @@ static Token lastToken;
 
 static void addToken(TokenList *list, Token token){
     list->tokens = (Token *)realloc(list->tokens, sizeof(Token) * (++list->count));
+    token.source = list->source;
     list->tokens[list->count - 1] = token;
 }
 
 static Token makeToken(TokenType type){
     Token t;
-    t.length = 1;
+    t.source = NULL;
     t.type = type;
     t.line = line;
     t.string = (char *)malloc(sizeof(char) * (present - start + 1));
@@ -40,10 +41,41 @@ static Token makeToken(TokenType type){
     return t;
 }
 
-static Token error(){
-    Token m = makeToken(TOKEN_unknown);
-    lnerr("Unexpected character '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "'!", m, m.string);
-    return m;
+// rtype 1 --> error
+// rtype 2 --> warning
+// rtype 0 --> info
+static void print_source(const char *s, size_t line, size_t hfrom, size_t hto, uint8_t rtype){
+    if(rtype == 1)
+        pred( ANSI_FONT_BOLD "\n<line %zd>\t" ANSI_COLOR_RESET, line);
+    else if(rtype == 2)
+        pylw( ANSI_FONT_BOLD "\n<line %zd>\t" ANSI_COLOR_RESET, line);
+    else
+        pblue( ANSI_FONT_BOLD "\n<line %zd>\t" ANSI_COLOR_RESET, line);
+    
+    if(s == NULL){
+        pmgn("<source not available>");
+        return;
+    }
+    size_t l = 1, p = 0;
+    while(l < line){
+        if(s[p] == '\n')
+            l++;
+        p++;
+    }
+    for(size_t i = p;s[i] != '\n' && s[i] != '\0';i++)
+        printf("%c", s[i]);
+    printf("\n            \t");
+    for(size_t i = p;i <= hto;i++){
+        if(i >= hfrom && i <= hto)
+            pmgn(ANSI_FONT_BOLD "~" ANSI_COLOR_RESET);
+        else
+            printf(" ");
+    }
+    printf("\n");
+}
+
+void token_print_source(Token t, uint8_t rtype){
+    print_source(t.source, t.line, t.start, t.end, rtype);
 }
 
 static Token makeKeyword(){
@@ -137,7 +169,7 @@ static Token nextToken(){
 #endif
     }
     present++;
-    return error();
+    return makeToken(TOKEN_unknown);
 }
 
 TokenList tokens_scan(const char* line){
@@ -146,15 +178,18 @@ TokenList tokens_scan(const char* line){
     present = 0;
     start = 0;
 
-    TokenList list = {NULL, 0, 0};
+    TokenList list = {source, NULL, 0, 0};
     while(present < length){
         Token t = nextToken();
         list.hasError += t.type == TOKEN_unknown;
         addToken(&list, t);
+        if(t.type == TOKEN_unknown){ 
+            err("Unexpected character '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "'!", t.string);
+            token_print_source(list.tokens[list.count - 1], 1);
+        }
     }
     if(list.tokens[list.count - 1].type != TOKEN_eof)
         addToken(&list, makeToken(TOKEN_eof));
-    free(source);
     return list;
 }
 
@@ -163,6 +198,7 @@ void tokens_free(TokenList list){
     for(uint32_t i = 0;i < list.count;i++)
         free(list.tokens[i].string);
     free(list.tokens);
+    free(list.source);
 }
 
 /* The code below is for testing and debugging purposes.

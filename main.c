@@ -36,7 +36,7 @@ int main(){
     dbg("===== Parsing and Compiling =====\n");
 #endif
     if(l.hasError==0){
-        if(parse_and_emit(l, source, machine->memory, 1024, 0)){
+        if(parse_and_emit(l, machine->memory, 1024, 0)){
 #ifdef DEBUG
             uint32_t offset = 0;
             printf("\n");

@@ -10,42 +10,6 @@
 
 static uint32_t present = 0, length = 0, presentOffset = 0, memSize = 0, hasErrors = 0;
 static uint8_t *memory;
-static char *source = NULL;
-
-// rtype 1 --> error
-// rtype 2 --> warning
-// rtype 0 --> info
-static void print_source(size_t line, size_t hfrom, size_t hto, uint8_t rtype){
-    if(source == NULL)
-        return;
-    if(rtype == 1)
-        pred( ANSI_FONT_BOLD "\n<line %zd>\t" ANSI_COLOR_RESET, line);
-    else if(rtype == 2)
-        pylw( ANSI_FONT_BOLD "\n<line %zd>\t" ANSI_COLOR_RESET, line);
-    else
-        pblue( ANSI_FONT_BOLD "\n<line %zd>\t" ANSI_COLOR_RESET, line);
-    
-    size_t l = 1, p = 0;
-    while(l < line){
-        if(source[p] == '\n')
-            l++;
-        p++;
-    }
-    for(size_t i = p;source[i] != '\n' && source[i] != '\0';i++)
-        printf("%c", source[i]);
-    printf("\n            \t");
-    for(size_t i = p;i <= hto;i++){
-        if(i >= hfrom && i <= hto)
-            pmgn(ANSI_FONT_BOLD "~" ANSI_COLOR_RESET);
-        else
-            printf(" ");
-    }
-    printf("\n");
-}
-
-static void print_token_source(Token t, uint8_t rtype){
-    print_source(t.line, t.start, t.end, rtype);
-}
 
 static void writeByte(uint8_t byte){
     if(!hasErrors)
@@ -95,7 +59,7 @@ static void declareLabel(Token t, uint32_t declOffset){
             }
             else{
                 err("Label '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "' is already defined!", t.string);
-                print_token_source(labels[i].label, 1);
+                token_print_source(labels[i].label, 1);
                 hasErrors++;
             }
             return;
@@ -125,13 +89,13 @@ static void checkLabels(){
         if(labels[i].isInit == 0){
             err("Label '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "' used but not defined!",
                     labels[i].label.string);
-                print_token_source(labels[i].label, 1);
+                token_print_source(labels[i].label, 1);
             hasErrors++;
         }
         else if(labels[i].refCount == 0){
             warn("Label '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "' defined but not used!",
                     labels[i].label.string);
-                print_token_source(labels[i].label, 2);
+                token_print_source(labels[i].label, 2);
         }
         else{
             uint32_t bak = presentOffset;
@@ -165,8 +129,8 @@ static void advance(){
         presentLine = presentToken.line;
     }
     else{
-        err("Unexpected end of file!");
-        print_source(presentLine, 0, presentToken.end, 1);
+        err("Unexpected end of file!");;
+        token_print_source(presentToken, 1);
         hasErrors++;
     }
 }
@@ -207,7 +171,7 @@ bool consume(TokenType type){
         err("Unexpected token : '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET
                 "', Expected : '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "'", presentToken.string,
                 tokenStrings[type]);
-        print_token_source(presentToken, 1);
+        token_print_source(presentToken, 1);
         if(presentToken.type != TOKEN_eof)
             advance();
         hasErrors++;
@@ -222,7 +186,7 @@ static void reg(){
         uint64_t num = strtoll(previousToken.string, &end, 10);
         if(num > 7){
             err("Register number must be < 8, received " ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%" PRIu64 ANSI_COLOR_RESET, num);
-            print_token_source(previousToken, 1);
+            token_print_source(previousToken, 1);
             hasErrors++;
             writeByte(0);
         }
@@ -238,7 +202,7 @@ static bool num(){
         if(num > UINT32_MAX){
             err("Memory reference must be < %" PRIu32 ", received " ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%" PRIu64 ANSI_COLOR_RESET, 
                                                          UINT32_MAX, num);
-            print_token_source(previousToken, 1);
+            token_print_source(previousToken, 1);
             hasErrors++;
             writeLong(0);
         }
@@ -420,7 +384,7 @@ void statement_parseMessage(){
 }
 #endif
 
-bool parse_and_emit(TokenList l, char *s, uint8_t *mem, uint32_t memS, uint32_t offset){
+bool parse_and_emit(TokenList l, uint8_t *mem, uint32_t memS, uint32_t offset){
     memory = mem;
     memSize = memS;
     presentOffset = offset;
@@ -428,7 +392,6 @@ bool parse_and_emit(TokenList l, char *s, uint8_t *mem, uint32_t memS, uint32_t 
     presentLine = presentToken.line;
     list = l;
     length = list.count;
-    source = s;
 
     while(!match(TOKEN_eof)){
         switch(presentToken.type){
@@ -449,7 +412,7 @@ bool parse_and_emit(TokenList l, char *s, uint8_t *mem, uint32_t memS, uint32_t 
 #endif
                 default:
                     err("Bad token : '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "'", presentToken.string);
-                    print_token_source(presentToken, 1);
+                    token_print_source(presentToken, 1);
                     hasErrors++;
                     advance();
                     break;
