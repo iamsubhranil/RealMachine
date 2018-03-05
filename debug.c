@@ -27,7 +27,11 @@ void debugRegister(VirtualMachine *machine, uint8_t index){
 #define pimm(x) pmgn("#%" PRIu32, READ_LONG(x))
 #define pcmm() printf(",\t")
 
-void debugInstruction(uint8_t *memory, uint32_t *offset){
+void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
+    if(size <= (*offset) || size <= (*offset) + instructionLength[memory[*offset]]){
+        *offset = size;
+        return;
+    }
     printf(ANSI_FONT_BOLD);
     pblue("%04" PRIu32 "\t", *offset);
     uint8_t opcode = memory[*offset];
