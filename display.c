@@ -64,11 +64,11 @@ void dbg(const char* msg, ...){
 
 void info(const char* msg, ...){
     printf(ANSI_FONT_BOLD);
-    printf(ANSI_COLOR_BLUE "\n[Info]");
+    printf(ANSI_COLOR_BLUE "\n[Info] ");
+    printf(ANSI_COLOR_RESET);
     va_list args;
     va_start(args, msg);
     vprintf(msg, args);
-    printf(ANSI_COLOR_RESET);
 }
 
 void err(const char* msg, ...){
