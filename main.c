@@ -8,14 +8,13 @@
 #ifdef DEBUG
 #include <time.h>
 #endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <inttypes.h>
-
 #include <unistd.h>
-
 
 #ifdef DEBUG
 
@@ -74,8 +73,11 @@ int main(int argc, char *argv[]){
         usage(argv[0]);
         return 1;
     }
+
     int opt, mode = 0;
     char *source = NULL, *outputFile = NULL;
+    Data binaryData = (Data){NULL, 0}; // Bytecode container
+    
     while((opt = getopt(argc, argv, "rec")) != -1){
         switch(opt){
             case 'r':
@@ -107,7 +109,8 @@ end:
             else if(optind == (argc - 1)){
                 source = read_whole_file(argv[optind]);
                 if(source == NULL){
-                    err("Unable to read input file : " ANSI_COLOR_RED ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "\n", argv[optind]);
+                    err("Unable to read input file : " 
+                            ANSI_COLOR_RED ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "\n", argv[optind]);
                     return 1;
                 }
             }
@@ -127,7 +130,8 @@ end:
                 if(optind == (argc - 2)){
                     source = read_whole_file(argv[optind]);
                     if(source == NULL){
-                        err("Unable to read input file : " ANSI_COLOR_RED ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "\n", argv[optind]);
+                        err("Unable to read input file : " 
+                                ANSI_COLOR_RED ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "\n", argv[optind]);
                         return 1;
                     }
                     outputFile = argv[++optind];
@@ -146,29 +150,47 @@ end:
                 return 1;
             }
             else if(optind == (argc - 1)){
-                info("Run from binary is not yet implemented! Check again soon!\n");
+                binaryData = bc_read_from_disk(argv[optind]);
+                if(binaryData.size == 0){
+                    err("Unable to start virtual machine!\n");
+                    return 1;
+                }
             }
             else{
                 err("Wrong arguments!");
                 usage(argv[0]);
                 return 1;
             }
-            return 1;
+            break;
     }
 
-    // Main execution starts here
+#ifdef DEBUG
+    clock_t start, end; // timers
+#endif
 
+    // Main execution starts here
+    TokenList l;
     VirtualMachine *machine = rm_new();
-    rm_init(machine, 0);
+    
+    if(binaryData.size == 0)
+        rm_init(machine, 0);
+    else{
+        machine->memory = binaryData.memory;
+        machine->memSize = binaryData.size;
+        goto execute;
+    }
+
 #ifdef DEBUG
     dbg("===== Source =====");
     printf("\n%s\n", source);
     dbg("===== Scanning =====\n");
-    clock_t start = clock();
+    start = clock();
 #endif
-    TokenList l = tokens_scan(source);
+
+    l = tokens_scan(source);
+
 #ifdef DEBUG
-    clock_t end = clock();
+    end = clock();
     printTime(start, end, "Scanning");
     dbg("===== Tokens =====\n");
     lexer_print_tokens(l);
@@ -176,25 +198,35 @@ end:
     dbg("===== Parsing and Compiling =====\n");
     start = clock();
 #endif
+
     if(l.hasError==0){
         if(parse_and_emit(l, &machine->memory, &machine->memSize, 0)){
+
 #ifdef DEBUG
             end = clock();
             printTime(start, end, "Parsing");
-            uint32_t offset = 0;
             printf("\n");
-            dbg("===== Compiled chunk =====\n");
+#endif
+
+execute:;
+
+#ifdef DEBUG
+            uint32_t offset = 0;
+            dbg("===== %s chunk =====\n", binaryData.size == 0 ? "Compiled" : "Read");
             while(offset < machine->memSize && machine->memory[offset] != OP_nex)
                 debugInstruction(machine->memory, &offset, machine->memSize);
             printf("\n");
             if(!outputFile)
                 dbg("===== Executing =====\n");
 #endif
+
             fflush(stdout);
             if(outputFile){
+
 #ifdef DEBUG
                 dbg("===== Saving ======\n");
 #endif          
+
                 if(bc_save_to_disk(outputFile, machine->memory, machine->memSize))
                     printf(ANSI_COLOR_GREEN ANSI_FONT_BOLD "\n[Done] " ANSI_COLOR_RESET
                             "Compiled and saved to file : " 
@@ -203,14 +235,18 @@ end:
                     err("Unable to save to given file!\n");
                 goto done;
             }
+
 #ifdef DEBUG
             start = clock();
 #endif
+
             rm_run(machine, 0);
+
 #ifdef DEBUG
             end = clock();
             printTime(start, end, "Execution");
 #endif
+
             printf("\n");
         }
         else if(!outputFile)
@@ -226,10 +262,14 @@ end:
             err("Unable to save to given file!\n");    
     }
 done:
+
 #ifdef DEBUG
     dbg("===== Execution Complete =====\n");
 #endif
-    free(source);
+
+    if(binaryData.size == 0){
+        free(source);
+        tokens_free(l);
+    }
     rm_free(machine);
-    tokens_free(l);
 }

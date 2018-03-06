@@ -2,8 +2,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include "display.h"
-
 #include "vm.h"
 #include "bytecode.h"
 
@@ -23,8 +23,137 @@ static uint8_t instructionLength[] = {
     #undef OPCODE
 };
 
+/* Bytecode format
+ * ---------------
+ * MAGIC --> 32 bits
+ * Bytecode VERSION -->  8 bits
+ * core bytecode length excluding header and footer --> 32 bits
+ * HEADER --> 32 bits
+ * core bytecode
+ * FOOTER --> 32 bits
+ */
+
+typedef struct{
+    uint8_t version;
+    uint8_t *code;
+    uint32_t magic;
+    uint32_t length;
+    uint32_t header;
+    uint32_t footer;
+} Bytecode;
+
+#define MAGIC 0x726c6d63 // rlmc
+#define HEADER 0x62737274 // bsrt
+#define FOOTER 0x62656e64 // bend
+
+// This will change if the bytecode format is updated
+#define CURRENT_VERSION 0x1
+
+#define OK() printf(" : " ANSI_COLOR_GREEN ANSI_FONT_BOLD "OK" ANSI_COLOR_RESET)
+
+#ifdef DEBUG
+#define SHOW_DINFO(x, str) {\
+       dbg( ANSI_COLOR_RED ANSI_FONT_BOLD str " mismatch!" ANSI_COLOR_RESET); \
+        dbg("Expected " str " : " ANSI_COLOR_RED ANSI_FONT_BOLD "0x%x" ANSI_COLOR_RESET, x); \
+    }
+#else
+#define SHOW_DINFO(a, b) {}
+#endif
+
+#define VERIFY(x, y, str, msg) \
+    if(x != y) {\
+        SHOW_DINFO(x, str); \
+        err(msg); \
+        goto stopread; \
+    }
+
+
 Data bc_read_from_disk(const char *inputFile){
-    return (Data){NULL, 0};
+    FILE *opn = fopen(inputFile, "rb");
+    if(!opn){
+        err("Unable to open file for reading : " ANSI_COLOR_RED ANSI_FONT_BOLD 
+                "%s" ANSI_FONT_BOLD"  !\n", inputFile);
+        return (Data){NULL, 0};
+    }
+    fseek(opn, 0L, SEEK_END);
+    long size = ftell(opn);
+    fseek(opn, 0L, SEEK_SET);
+#ifdef DEBUG
+    dbg("File size : " ANSI_COLOR_CYAN ANSI_FONT_BOLD "%ld" ANSI_COLOR_RESET " bytes\n", size);
+#endif
+    if(size < 18){ // 21 for metadata, atleast 1 opcode
+        err("Size of the executable is less than expected!");
+            goto stopread;
+    }
+    Bytecode bc;
+    bc.code = NULL;
+
+    fread(&bc.magic, 4, 1, opn);
+    fread(&bc.version, 1, 1, opn);
+    fread(&bc.length, 4, 1, opn);
+    fread(&bc.header, 4, 1, opn);
+
+#ifdef DEBUG
+    dbg("===== Verifying File Metadata =====");
+    dbg("Magic : 0x%x", bc.magic);
+    dbg("Version : 0x%x", bc.version);
+    dbg("Code length : %" PRIu32 " bytes", bc.length);
+    dbg("Header : 0x%x", bc.header);
+    dbg("Checking magic");
+#endif
+
+    VERIFY(MAGIC, bc.magic, "Magic", "Not a valid RealMachine executable!");
+
+#ifdef DEBUG
+    OK();
+    dbg("Checking version");
+#endif
+
+    VERIFY(CURRENT_VERSION, bc.version, "Version", "This version of the executable is "
+            "not supported by the program!");
+
+#ifdef DEBUG
+    OK();
+    dbg("Checking header");
+#endif
+
+    VERIFY(HEADER, bc.header, "Header", "The executable is corrupted!");
+
+#ifdef DEBUG
+    OK();
+    dbg("Checking footer");
+#endif
+
+    if(size < bc.length + 17){
+        err("Size of the executable does not match!");
+        goto stopread;
+    }
+    fseek(opn, -4, SEEK_END);
+    fread(&bc.footer, 4, 1, opn);
+
+#ifdef DEBUG
+    dbg("Footer : 0x%x", bc.footer);
+#endif
+
+    VERIFY(FOOTER, bc.footer, "Footer", "The executable is corrupted");
+
+#ifdef DEBUG
+    OK();
+    dbg("Reading bytecode");
+#endif
+
+    // Everything is good
+    fseek(opn, 13, SEEK_SET);
+    bc.code = (uint8_t *)malloc(sizeof(uint8_t) * (bc.length+1));
+    fread(bc.code, bc.length, 1, opn);
+
+#ifdef DEBUG
+    dbg("Read complete!\n");
+#endif
+
+stopread:
+    fclose(opn);
+    return (Data){bc.code, bc.code == NULL ? 0 : bc.length};
 }
 
 bool bc_save_to_disk(const char *outputFile, uint8_t *memory, uint32_t size){ 
@@ -33,10 +162,31 @@ bool bc_save_to_disk(const char *outputFile, uint8_t *memory, uint32_t size){
         err("Unable to open file for saving : " ANSI_COLOR_RED ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET " !\n", outputFile);
         return false;
     }
+
+    Bytecode bc;
+    bc.code = memory;
+    bc.length = size;
+    bc.magic = MAGIC;
+    bc.header = HEADER;
+    bc.footer = FOOTER;
+    bc.version = CURRENT_VERSION;
+
 #ifdef DEBUG
-    dbg("Writing to file '%s'\n", outputFile);
+    dbg("File size : " ANSI_FONT_BOLD ANSI_COLOR_CYAN "%ld" ANSI_COLOR_RESET " bytes\n", size+17);
+    dbg("===== Writing File Metadata =====");
+    dbg("Magic : 0x%x", bc.magic);
+    dbg("Version : 0x%x", bc.version);
+    dbg("Code length : %" PRIu32 " bytes", bc.length);
+    dbg("Header : 0x%x", bc.header);
+    dbg("Footer : 0x%x", bc.footer);
 #endif
-    fwrite(memory, size, 1, save);
+
+    fwrite(&bc.magic, 4, 1, save);
+    fwrite(&bc.version, 1, 1, save);
+    fwrite(&bc.length, 4, 1, save);
+    fwrite(&bc.header, 4, 1, save);
+    fwrite(bc.code, size, 1, save);
+    fwrite(&bc.footer, 4, 1, save);
     fclose(save);
     return true;
 }
