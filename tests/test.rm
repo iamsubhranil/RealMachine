@@ -9,7 +9,7 @@ mov #1, r1
 [
 This is a comment
 ]
-mov #10000, r2
+mov #100000000, r2
 loop : add r1, r0
 jlt r0, r2, @loop
 store r0, @var
