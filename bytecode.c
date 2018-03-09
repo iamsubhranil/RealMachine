@@ -47,32 +47,38 @@ typedef struct{
 #define FOOTER 0x62656e64 // bend
 
 // This will change if the bytecode format is updated
-#define CURRENT_VERSION 0x1
-
-#define OK() printf(" : " ANSI_COLOR_GREEN ANSI_FONT_BOLD "OK" ANSI_COLOR_RESET)
+#define CURRENT_EXECUTABLE_VERSION 0x1
 
 #ifdef DEBUG
-#define SHOW_DINFO(x, str) {\
-       dbg( ANSI_COLOR_RED ANSI_FONT_BOLD str " mismatch!" ANSI_COLOR_RESET); \
+#define SHOW_FAIL(x, str) {\
+        printf(" (" ANSI_COLOR_RED ANSI_FONT_BOLD "FAILED" ANSI_COLOR_RESET ") "); \
         dbg("Expected " str " : " ANSI_COLOR_RED ANSI_FONT_BOLD "0x%x" ANSI_COLOR_RESET, x); \
     }
+#define STARTMSG(str, val) {\
+    dbg(str " : 0x%x", val);}
+#define DONEMSG() {\
+    printf(" (" ANSI_COLOR_GREEN ANSI_FONT_BOLD "PASSED" ANSI_COLOR_RESET ")"); }
 #else
-#define SHOW_DINFO(a, b) {}
+#define SHOW_FAIL(a, b) {}
+#define STARTMSG(str, val) {}
+#define DONEMSG() {}
 #endif
 
 #define VERIFY(x, y, str, msg) \
+    STARTMSG(str, y); \
     if(x != y) {\
-        SHOW_DINFO(x, str); \
+        SHOW_FAIL(x, str); \
         err(msg); \
         goto stopread; \
-    }
+    } \
+    DONEMSG();
 
 
 Data bc_read_from_disk(const char *inputFile){
     FILE *opn = fopen(inputFile, "rb");
     if(!opn){
         err("Unable to open file for reading : " ANSI_COLOR_RED ANSI_FONT_BOLD 
-                "%s" ANSI_FONT_BOLD"  !\n", inputFile);
+                "%s" ANSI_COLOR_RESET "!\n", inputFile);
         return (Data){NULL, 0};
     }
     fseek(opn, 0L, SEEK_END);
@@ -95,50 +101,20 @@ Data bc_read_from_disk(const char *inputFile){
 
 #ifdef DEBUG
     dbg("===== Verifying File Metadata =====");
-    dbg("Magic : 0x%x", bc.magic);
-    dbg("Version : 0x%x", bc.version);
-    dbg("Code length : %" PRIu32 " bytes", bc.length);
-    dbg("Header : 0x%x", bc.header);
-    dbg("Checking magic");
 #endif
 
     VERIFY(MAGIC, bc.magic, "Magic", "Not a valid RealMachine executable!");
-
-#ifdef DEBUG
-    OK();
-    dbg("Checking version");
-#endif
-
-    VERIFY(CURRENT_VERSION, bc.version, "Version", "This version of the executable is "
+    VERIFY(CURRENT_EXECUTABLE_VERSION, bc.version, "Version", "This version of the executable is "
             "not supported by the program!");
-
-#ifdef DEBUG
-    OK();
-    dbg("Checking header");
-#endif
-
+    VERIFY(bc.length + 17, size, "Total size", "The executable is corrupted!");
     VERIFY(HEADER, bc.header, "Header", "The executable is corrupted!");
-
-#ifdef DEBUG
-    OK();
-    dbg("Checking footer");
-#endif
-
-    if(size < bc.length + 17){
-        err("Size of the executable does not match!");
-        goto stopread;
-    }
-    fseek(opn, -4, SEEK_END);
+    
+    fseek(opn, bc.length, SEEK_CUR);
     fread(&bc.footer, 4, 1, opn);
+    
+    VERIFY(FOOTER, bc.footer, "Footer", "The executable is corrupted!");
 
 #ifdef DEBUG
-    dbg("Footer : 0x%x", bc.footer);
-#endif
-
-    VERIFY(FOOTER, bc.footer, "Footer", "The executable is corrupted");
-
-#ifdef DEBUG
-    OK();
     dbg("Reading bytecode");
 #endif
 
@@ -169,7 +145,7 @@ bool bc_save_to_disk(const char *outputFile, uint8_t *memory, uint32_t size){
     bc.magic = MAGIC;
     bc.header = HEADER;
     bc.footer = FOOTER;
-    bc.version = CURRENT_VERSION;
+    bc.version = CURRENT_EXECUTABLE_VERSION;
 
 #ifdef DEBUG
     dbg("File size : " ANSI_FONT_BOLD ANSI_COLOR_CYAN "%ld" ANSI_COLOR_RESET " bytes\n", size+17);
