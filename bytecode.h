@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rm_common.h"
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdbool.h>

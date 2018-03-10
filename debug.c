@@ -1,3 +1,7 @@
+
+
+#if defined(DEBUG) || defined(DEBUG_INSTRUCTIONS)
+
 #include "debug.h"
 #include "vm.h"
 #include "display.h"
@@ -10,7 +14,6 @@ static const char* opStrings [] = {
     #include "opcodes.h"
     #undef OPCODE
 };
-
 static uint32_t instructionLength[] = {
     #define OPCODE(a, length, b) length,
     #include "opcodes.h"
@@ -21,7 +24,6 @@ void debugRegister(VirtualMachine *machine, uint8_t index){
     r.lng = machine->registers[index];
     printf("r%" PRIu8 " : %08x  %08x  %08x  %08x\n", index, r.byte[3], r.byte[2], r.byte[1], r.byte[0]);
 }
-
 #define preg(x) pcyn("r%" PRIu8, READ_BYTE(x))
 #define pmem(x) pylw("@%" PRIu32, READ_LONG(x))
 #define pimm(x) pmgn("#%" PRIu32, READ_LONG(x))
@@ -133,3 +135,5 @@ void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
     #undef READ_WORD
     #undef READ_LONG
 }
+
+#endif

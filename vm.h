@@ -1,16 +1,7 @@
 #pragma once
-
+#include "rm_common.h"
 #include <stdint.h>
 #include <stdbool.h>
-
-// This macro sanitizes all memory access, i.e.
-// read and writes, by checking whether they are
-// out of bounds at each access explicitly.
-// Needless to say, this slows down the machine
-// to a large degree. Hence, it is defined here
-// as a switch between performance and security.
-//
-// #define SANITIZE_ACCESS
 
 typedef union{
     uint8_t byte[4];

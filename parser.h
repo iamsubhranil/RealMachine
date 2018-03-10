@@ -1,5 +1,5 @@
 #pragma once
-
+#include "rm_common.h"
 #include "lexer.h"
 #include <stdint.h>
 #include <stdbool.h>

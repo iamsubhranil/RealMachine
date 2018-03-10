@@ -1,3 +1,4 @@
+#include "rm_common.h"
 #include "vm.h"
 #include "debug.h"
 #include "bytecode.h"

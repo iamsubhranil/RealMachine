@@ -38,10 +38,6 @@ bool rm_init(VirtualMachine *machine, uint32_t mem){
     return true;
 }
 
-#define REAL_COMPUTED_GOTO
-
-//#define DEBUG_INSTRUCTIONS
-
 void rm_run(VirtualMachine *machine, uint32_t offset){
     if(offset > machine->memSize)
         return;

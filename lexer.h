@@ -1,12 +1,7 @@
 #pragma once
-
+#include "rm_common.h"
 #include <stdint.h>
 #include <stdlib.h>
-
-// To allow scan time messages in '()'
-#define RM_ALLOW_LEXER_MESSAGES
-// To allow parse time messages in '{}'
-#define RM_ALLOW_PARSE_MESSAGES
 
 typedef enum{
     #define ET(x) TOKEN_##x
