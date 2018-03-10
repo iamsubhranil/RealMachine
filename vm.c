@@ -163,7 +163,7 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             INCR_PC(5);
             DISPATCH();
         CASE(printc):
-            printf("%c", READ_LONG(READ_LONG(machine->PC + 1)));
+            printf("%c", READ_BYTE(READ_LONG(machine->PC + 1)));
             INCR_PC(5);
             DISPATCH();
         CASE(jeq):
