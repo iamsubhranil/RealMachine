@@ -49,13 +49,29 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
 
     static uint8_t instruction = 0;
 
+    #ifdef SANITIZE_ACCESS
+    #define CHECK_BOUNDS(x) \
+            if((uint32_t)(x) >= machine->memSize || machine->SR == 215) {\
+                uint32_t y = machine->SR == 215 ? machine->AR : (uint32_t)x; \
+                err("Trying to %s unmapped memory at offset " ANSI_COLOR_RED ANSI_FONT_BOLD \
+                        "%04" PRIu32 ANSI_COLOR_RESET "!\n", \
+                        machine->SR == 215 ? "read from" : "write to", (uint32_t)y); \
+                machine->SR = machine->AR = 0; \
+                return; \
+            } 
+    #define READ_BYTE(x) ((uint32_t)x >= machine->memSize) ? machine->SR = 215, machine->AR = x, 0 : machine->memory[x]
+    #else
     #define READ_BYTE(x) machine->memory[x]
+    #define CHECK_BOUNDS(x) {}
+    #endif
+
     #define READ_WORD(x) ((READ_BYTE(x) << 8) | (READ_BYTE(x + 1)))
     #define READ_LONG(x) ((READ_WORD(x) << 16) | (READ_WORD(x + 2)))
 
-    #define WRITE_BYTE(x, y) machine->memory[x] = y
-    #define WRITE_WORD(x, y) WRITE_BYTE(x, (y & 0xff00) >> 8), WRITE_BYTE(x + 1, (y & 0xff))
-    #define WRITE_LONG(x, y) WRITE_WORD(x, (y & 0xffff0000) >> 16), WRITE_WORD(x + 2, (y & 0xffff))
+    #define WRITE_BYTE(x, y) {CHECK_BOUNDS(x); machine->memory[x] = y;}
+    #define WRITE_WORD(x, y) {WRITE_BYTE(x, (y & 0xff00) >> 8); WRITE_BYTE(x + 1, (y & 0xff));}
+    #define WRITE_LONG(x, y) {WRITE_WORD(x, (y & 0xffff0000) >> 16); WRITE_WORD(x + 2, (y & 0xffff));}
+
 
     #ifdef DEBUG_INSTRUCTIONS
     #define DEBUG_INS() { \
@@ -77,7 +93,9 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
     #define CASE(name) code_##name
     #define DISPATCH() \
         DEBUG_INS(); \
+        CHECK_BOUNDS(machine->PC); \
         goto *dispatchTable[instruction = READ_BYTE(machine->PC)];
+
     #define INTERPRET_LOOP DISPATCH()
 
     #else
@@ -87,6 +105,7 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
     #define INTERPRET_LOOP \
         loop: \
         DEBUG_INS(); \
+        CHECK_BOUNDS(machine->PC); \
         switch(instruction = READ_BYTE(machine->PC))
 
     #endif

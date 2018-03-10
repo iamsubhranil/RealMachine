@@ -1,0 +1,4 @@
+print @23728
+store r0, @10000
+load @100000, r0
+halt
