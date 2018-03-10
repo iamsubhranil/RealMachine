@@ -349,6 +349,13 @@ static void statement_printc(){
     ref();
 }
 
+void statement_mcopy(){
+    writeByte(OP_mcopy);
+    ref();
+    consume(TOKEN_comma);
+    ref();
+}
+
 #define parseJump(x) \
 static void statement_##x(){ \
     writeByte(OP_##x); \

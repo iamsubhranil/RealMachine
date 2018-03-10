@@ -120,6 +120,11 @@ void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
         case OP_nex:
             pred("[Error] Code not executable!");
             break;
+        case OP_mcopy:
+            pmem(*offset + 1);
+            pcmm();
+            pmem(*offset + 5);
+            break;
     }
     *offset += instructionLength[opcode];
     printf("\n");

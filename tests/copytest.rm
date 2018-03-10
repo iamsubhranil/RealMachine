@@ -1,0 +1,9 @@
+print @mema
+mcopy @mema, @memb
+print @memb
+mcopy @memb, @memc
+printc @memc
+halt
+mema : const #100
+memb : const #0
+memc : const #0

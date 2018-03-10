@@ -95,3 +95,9 @@ OPCODE(nex, 1, 0)
 //
 // char 'i'
 OPCODE(char, 1, 4)
+
+// Copies the value stored at a memory offset
+// to another
+//
+// mcopy @offset_from, @offset_to
+OPCODE(mcopy, 9, 5)

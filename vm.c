@@ -60,7 +60,7 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
     #ifdef DEBUG_INSTRUCTIONS
     #define DEBUG_INS() { \
         uint32_t offs = machine->PC; \
-        debugInstruction(machine->memory, &offs); \
+        debugInstruction(machine->memory, &offs, machine->memSize); \
         getc(stdin); }
     #else
     #define DEBUG_INS() {}
@@ -195,5 +195,9 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             err("Trying to execute non-executable code at offset " 
                     ANSI_FONT_BOLD ANSI_COLOR_RED "%04" PRIu32 ANSI_COLOR_RESET "!\n", machine->PC);
             return;
+        CASE(mcopy):
+            WRITE_LONG(READ_LONG(machine->PC + 5), READ_LONG(READ_LONG(machine->PC + 1)));
+            INCR_PC(9);
+            DISPATCH();
     }
 }
