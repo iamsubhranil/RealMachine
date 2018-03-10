@@ -126,6 +126,8 @@ static TokenList list;
 static size_t presentLine = 0;
 static Token presentToken, previousToken;
 
+static uint8_t ueofShown = 0;
+
 static void advance(){
     if(present < length){
         previousToken = presentToken;
@@ -134,9 +136,12 @@ static void advance(){
         presentLine = presentToken.line;
     }
     else{
-        err("Unexpected end of file!");;
-        token_print_source(presentToken, 1);
-        hasErrors++;
+        if(!ueofShown){
+            err("Unexpected end of file!");
+            token_print_source(presentToken, 1);
+            ueofShown = 1;
+            hasErrors++;
+        }
     }
 }
 
@@ -147,39 +152,32 @@ bool match(TokenType type){
     return false;
 }
 
-#define ET(x) #x
 static const char* tokenStrings[] = { 
-    ET(comma),
-    ET(register),
-    ET(hash),
-    ET(address),
-    ET(number),
-    ET(eof),
-    ET(unknown),
-    ET(label),
-    ET(colon),
-    ET(aphostrophy),
-#ifdef RM_ALLOW_PARSE_MESSAGES
-    ET(parseMessage),
-#endif
-    #define OPCODE(x, a, b) ET(x),
-    #include "opcodes.h"
-    #undef OPCODE
+    #define ET(x) #x,
+    #include "tokens.h"
+    #undef ET
 };
-#undef ET
 
 bool consume(TokenType type){
     if(match(type)){
         advance();
         return true;
     }
+    else if(presentToken.type == TOKEN_eof){
+        if(!ueofShown){
+            err("Unexpected end of file!");
+            token_print_source(presentToken, 1);
+            ueofShown = 1;
+            hasErrors++;
+        }
+        return false;
+    }
     else{
         err("Unexpected token : '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET
                 "', Expected : '" ANSI_FONT_BOLD "%s" ANSI_COLOR_RESET "'", presentToken.string,
                 tokenStrings[type]);
         token_print_source(presentToken, 1);
-        if(presentToken.type != TOKEN_eof)
-            advance();
+        advance();
         hasErrors++;
         return false;
     }
@@ -422,6 +420,7 @@ bool parse_and_emit(TokenList l, uint8_t **mem, uint32_t *memS, uint32_t offset)
     presentLine = presentToken.line;
     list = l;
     length = list.count;
+    ueofShown = 0;
 
     while(!match(TOKEN_eof)){
         switch(presentToken.type){

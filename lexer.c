@@ -219,26 +219,11 @@ void tokens_free(TokenList list){
 
 #ifdef DEBUG
 
-#define ET(x) #x
-const char* tokenStrings[] = { 
-    ET(comma),
-    ET(register),
-    ET(hash),
-    ET(address),
-    ET(number),
-    ET(eof),
-    ET(unknown),
-    ET(label),
-    ET(colon),
-    ET(aphostrophy),
-#ifdef RM_ALLOW_PARSE_MESSAGES
-    ET(parseMessage),
-#endif
-    #define OPCODE(x, a, b) ET(x),
-    #include "opcodes.h"
-    #undef OPCODE
+static const char* tokenStrings[] = { 
+    #define ET(x) #x,
+    #include "tokens.h"
+    #undef ET
 };
-#undef ET
 
 static void printToken(Token t){
     pblue(" %s", tokenStrings[t.type]);

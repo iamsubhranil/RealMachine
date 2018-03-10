@@ -4,23 +4,8 @@
 #include <stdlib.h>
 
 typedef enum{
-    #define ET(x) TOKEN_##x
-    ET(comma),
-    ET(register),
-    ET(hash),
-    ET(address),
-    ET(number),
-    ET(eof),
-    ET(unknown),
-    ET(label),
-    ET(colon),
-    ET(aphostrophy),
-#ifdef RM_ALLOW_PARSE_MESSAGES
-    ET(parseMessage),
-#endif
-    #define OPCODE(x, a, b) ET(x),
-    #include "opcodes.h"
-    #undef OPCODE
+    #define ET(x) TOKEN_##x,
+    #include "tokens.h" 
     #undef ET
 } TokenType;
 
