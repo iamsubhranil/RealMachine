@@ -86,3 +86,12 @@ OPCODE(const, 4, 5)
 // this is not accessible by a source program,
 // only to use in internals
 OPCODE(nex, 1, 0)
+
+// stores a character constant
+// lexer will scream if more than
+// one character is put between
+// the aphostrophy's
+// will store only one byte
+//
+// char 'i'
+OPCODE(char, 1, 4)

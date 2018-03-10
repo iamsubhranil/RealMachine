@@ -187,7 +187,9 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             DISPATCH();
         CASE(halt):
             return;
-        CASE(const): // this should never be the case
+        CASE(const): 
+        CASE(char):
+            // this should never be the case
             DISPATCH();
         CASE(nex):
             err("Trying to execute non-executable code at offset " 

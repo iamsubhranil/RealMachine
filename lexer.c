@@ -139,6 +139,9 @@ static Token nextToken(){
         case ',':
             present++;
             return makeToken(TOKEN_comma);
+        case '\'':
+            present++;
+            return makeToken(TOKEN_aphostrophy);
         case '[':
             present++;
             while(present < length && source[present] != ']'){
@@ -227,6 +230,7 @@ const char* tokenStrings[] = {
     ET(unknown),
     ET(label),
     ET(colon),
+    ET(aphostrophy),
 #ifdef RM_ALLOW_PARSE_MESSAGES
     ET(parseMessage),
 #endif

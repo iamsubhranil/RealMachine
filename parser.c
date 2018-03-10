@@ -158,6 +158,7 @@ static const char* tokenStrings[] = {
     ET(unknown),
     ET(label),
     ET(colon),
+    ET(aphostrophy),
 #ifdef RM_ALLOW_PARSE_MESSAGES
     ET(parseMessage),
 #endif
@@ -197,6 +198,18 @@ static void reg(){
         }
         else
             writeByte(num);
+    }
+}
+
+static void ch(){
+    if(consume(TOKEN_aphostrophy) && consume(TOKEN_label)){
+        if(strlen(previousToken.string) > 1){
+            warn("More than one character quoted!");
+            token_print_source(previousToken, 2);
+        }
+        char c = previousToken.string[0];
+        writeByte((int)c);
+        consume(TOKEN_aphostrophy);
     }
 }
 
@@ -373,6 +386,10 @@ parseNoop(nex)
 
 static void statement_const(){
     imm();
+}
+
+static void statement_char(){
+    ch();
 }
 
 void statement_label(){
