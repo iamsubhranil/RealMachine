@@ -107,3 +107,8 @@ OPCODE(mcopy, 9, 5)
 //
 // rcopy r_from, r_to
 OPCODE(rcopy, 3, 5)
+
+// F**K me
+//
+// jmp @offset
+OPCODE(jmp, 5, 3)

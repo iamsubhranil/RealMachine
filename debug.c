@@ -128,6 +128,9 @@ void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
             pcmm();
             pmem(*offset + 5);
             break;
+        case OP_jmp:
+            pmem(*offset + 1);
+            break;
     }
     *offset += instructionLength[opcode];
     printf("\n");

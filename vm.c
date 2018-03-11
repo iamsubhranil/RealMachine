@@ -218,5 +218,8 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             regl(READ_BYTE(machine->PC + 2)) = regl(READ_BYTE(machine->PC + 1));
             INCR_PC(3);
             DISPATCH();
+        CASE(jmp):
+            machine->PC = READ_LONG(machine->PC + 1);
+            DISPATCH();
     }
 }

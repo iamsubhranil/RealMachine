@@ -361,6 +361,11 @@ void statement_rcopy(){
     reg();
 }
 
+static void statement_jmp(){
+    writeByte(OP_jmp);
+    ref();
+}
+
 #define parseJump(x) \
 static void statement_##x(){ \
     writeByte(OP_##x); \
