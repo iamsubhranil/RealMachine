@@ -248,47 +248,25 @@ static void imm(){
     num();
 }
 
-static void statement_add(){
-    writeByte(OP_add);
-    reg();
-    consume(TOKEN_comma);
-    reg();
-}
+#define TWOREG(name) \
+    static void statement_##name(){ \
+        writeByte(OP_##name); \
+        reg(); \
+        consume(TOKEN_comma); \
+        reg(); \
+    }
 
-static void statement_sub(){
-    writeByte(OP_sub);
-    reg();
-    consume(TOKEN_comma);
-    reg();
-}
+TWOREG(add)
 
-static void statement_mul(){
-    writeByte(OP_mul);
-    reg();
-    consume(TOKEN_comma);
-    reg();
-}
+TWOREG(sub)
 
-static void statement_div(){
-    writeByte(OP_div);
-    reg();
-    consume(TOKEN_comma);
-    reg();
-}
+TWOREG(mul)
 
-static void statement_and(){
-    writeByte(OP_and);
-    reg();
-    consume(TOKEN_comma);
-    reg();
-}
+TWOREG(div)
 
-static void statement_or(){
-    writeByte(OP_or);
-    reg();
-    consume(TOKEN_comma);
-    reg();
-}
+TWOREG(and)
+
+TWOREG(or)
 
 static void statement_not(){
     writeByte(OP_not);
