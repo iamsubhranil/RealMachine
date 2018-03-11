@@ -12,20 +12,24 @@ static const char* opStrings [] = {
     #include "opcodes.h"
     #undef OPCODE
 };
+
 static uint32_t instructionLength[] = {
     #define OPCODE(a, length, b) length,
     #include "opcodes.h"
     #undef OPCODE
 };
+
 void debugRegister(VirtualMachine *machine, uint8_t index){
     Register r;
     r.lng = machine->registers[index];
     printf("r%" PRIu8 " : %08x  %08x  %08x  %08x\n", index, r.byte[3], r.byte[2], r.byte[1], r.byte[0]);
 }
+
 #define preg(x) pcyn("r%" PRIu8, READ_BYTE(x))
 #define pmem(x) pylw("@%" PRIu32, READ_LONG(x))
 #define pimm(x) pmgn("#%" PRIu32, READ_LONG(x))
 #define pcmm() printf(",\t")
+
 
 void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
     if(size <= (*offset) || size <= (*offset) + instructionLength[memory[*offset]]){
@@ -35,9 +39,15 @@ void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
     printf(ANSI_FONT_BOLD);
     pblue("%04" PRIu32 "\t", *offset);
     Code opcode = (Code)memory[*offset];
+
+    uint8_t numInstructions = 0;
+
+    #define OPCODE(x, y, z) numInstructions++;
+    #include "opcodes.h"
+    #undef OPCODE
     
     printf(ANSI_FONT_BOLD);
-    if(opcode > sizeof(opStrings)){
+    if(opcode >= numInstructions){
         pred("UNKNWN\n");
         (*offset)++;
         return;
@@ -119,6 +129,7 @@ void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
             pimm(*offset + 1);
             break;
         case OP_nex:
+        case OP_char:
             pred("[Error] Code not executable!");
             break;
         case OP_mcopy:
