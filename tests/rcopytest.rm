@@ -1,0 +1,6 @@
+mov #323, r0
+rcopy r0, r1
+store r1, @storage
+print @storage
+halt
+storage : const #0

@@ -214,5 +214,9 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             WRITE_LONG(READ_LONG(machine->PC + 5), READ_LONG(READ_LONG(machine->PC + 1)));
             INCR_PC(9);
             DISPATCH();
+        CASE(rcopy):
+            regl(READ_BYTE(machine->PC + 2)) = regl(READ_BYTE(machine->PC + 1));
+            INCR_PC(3);
+            DISPATCH();
     }
 }

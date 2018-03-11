@@ -354,6 +354,13 @@ void statement_mcopy(){
     ref();
 }
 
+void statement_rcopy(){
+    writeByte(OP_rcopy);
+    reg();
+    consume(TOKEN_comma);
+    reg();
+}
+
 #define parseJump(x) \
 static void statement_##x(){ \
     writeByte(OP_##x); \

@@ -58,6 +58,7 @@ void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
         case OP_div:
         case OP_and:
         case OP_or:
+        case OP_rcopy:
             // reg --> cyan
             // mem --> yellow
             // imm --> magenta

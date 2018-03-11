@@ -101,3 +101,9 @@ OPCODE(char, 1, 4)
 //
 // mcopy @offset_from, @offset_to
 OPCODE(mcopy, 9, 5)
+
+// Copies the value stored at one register
+// to another
+//
+// rcopy r_from, r_to
+OPCODE(rcopy, 3, 5)

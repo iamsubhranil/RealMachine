@@ -189,6 +189,7 @@ void bc_write_op(uint8_t *memory, uint32_t *offset, int opcode, ...){
         case OP_div:
         case OP_and:
         case OP_or:
+        case OP_rcopy:
             memory[*offset + 1] = va_arg(args, int);
             memory[*offset + 2] = va_arg(args, int);
             break;
