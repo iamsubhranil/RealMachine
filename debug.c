@@ -1,5 +1,3 @@
-
-
 #if defined(DEBUG) || defined(DEBUG_INSTRUCTIONS)
 
 #include "debug.h"
@@ -36,7 +34,7 @@ void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
     }
     printf(ANSI_FONT_BOLD);
     pblue("%04" PRIu32 "\t", *offset);
-    uint8_t opcode = memory[*offset];
+    Code opcode = (Code)memory[*offset];
     
     printf(ANSI_FONT_BOLD);
     if(opcode > sizeof(opStrings)){
