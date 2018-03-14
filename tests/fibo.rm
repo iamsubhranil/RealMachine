@@ -1,7 +1,6 @@
 mov #0, r0
 mov #1, r1
 mov #10000000, r3
-mov #1, r4
 mov #0, r5
 mov #5, r6
 loop :
@@ -9,7 +8,7 @@ rcopy r1, r2
 add r0, r1
 store r1, @storage
 jeq r5, r6, @prnw
-add r4, r5
+incr r5
 cont : 
 print @storage
 printc @sp

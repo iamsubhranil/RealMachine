@@ -5,12 +5,11 @@ mov #0, r0
 (
 [Info] This is a scan time message!
 )
-mov #1, r1
 [
 This is a comment
 ]
 mov #100000000, r2
-loop : add r1, r0
+loop : incr r0
 jlt r0, r2, @loop
 store r0, @var
 print @var

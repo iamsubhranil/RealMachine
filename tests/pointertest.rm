@@ -1,0 +1,3 @@
+print *@label
+label : const #labelb
+labelb : const #0
