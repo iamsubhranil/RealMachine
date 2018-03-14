@@ -227,15 +227,22 @@ static void str(){
     }
 }
 
-static bool num(){
+static bool num(uint8_t requireUnsigned){
     if(consume(TOKEN_number)){
         char *end;
         int64_t num = strtoll(previousToken.string, &end, 10);
         if(num > INT32_MAX || num < INT32_MIN){
             err("Long constant must be " ANSI_FONT_BOLD "%" PRId32 ANSI_COLOR_RESET
                     " <= constant <= " ANSI_FONT_BOLD "%" PRId32 ANSI_COLOR_RESET
-                    ", received " ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%" PRId64 ANSI_COLOR_RESET, 
-                    INT32_MIN ,INT32_MAX, num);
+                    ", received " ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET, 
+                    INT32_MIN ,INT32_MAX, previousToken.string);
+            token_print_source(previousToken, 1);
+            hasErrors++;
+            writeLong(0);
+        }
+        else if(requireUnsigned == 1 && num < 0){
+            err("Positive numeric constant expected! Received : " ANSI_COLOR_RED 
+                    ANSI_FONT_BOLD "%" PRId64 ANSI_COLOR_RESET, num);
             token_print_source(previousToken, 1);
             hasErrors++;
             writeLong(0);
@@ -257,12 +264,12 @@ static void ref(){
         consume(TOKEN_label);
     }
     else
-        num();
+        num(1);
 }
 
-static void imm(){
+static void imm(uint8_t requireUnsigned){
     consume(TOKEN_hash);
-    num();
+    num(requireUnsigned);
 }
 
 #define TWOREG(name) \
@@ -285,23 +292,23 @@ TWOREG(and)
 
 TWOREG(or)
 
-    static void statement_not(){
-        writeByte(OP_not);
-        reg();
-    }
+static void statement_not(){
+    writeByte(OP_not);
+    reg();
+}
 
 static void statement_lshift(){
     writeByte(OP_lshift);
     reg();
     consume(TOKEN_comma);
-    imm();
+    imm(1);
 }
 
 static void statement_rshift(){
     writeByte(OP_rshift);
     reg();
     consume(TOKEN_comma);
-    imm();
+    imm(1);
 }
 
 static void statement_load(){
@@ -320,14 +327,14 @@ static void statement_store(){
 
 static void statement_mov(){
     writeByte(OP_mov);
-    imm();
+    imm(0);
     consume(TOKEN_comma);
     reg();
 }
 
 static void statement_save(){
     writeByte(OP_save);
-    imm();
+    imm(0);
     consume(TOKEN_comma);
     ref();
 }
@@ -396,9 +403,9 @@ parseNoop(halt)
 
 parseNoop(nex)
 
-    static void statement_const(){
-        imm();
-    }
+static void statement_const(){
+    imm(0);
+}
 
 static void statement_str(){
     str();
@@ -426,7 +433,7 @@ static void statement_prints(){
     writeByte(OP_prints);
     ref();
     consume(TOKEN_comma);
-    imm();
+    imm(1);
 }
 
 #ifdef RM_ALLOW_PARSE_MESSAGES

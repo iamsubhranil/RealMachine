@@ -1,0 +1,10 @@
+mov #-21, r0
+lshift r0, #-23
+lshift r0, #234
+rshift r1, #-32
+rshift r2, #24
+prints @213, #-329
+prints @1244, #23
+store r0, @-32
+store r0, @231
+halt
