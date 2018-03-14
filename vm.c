@@ -174,7 +174,7 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             INCR_PC(9);
             DISPATCH();
         CASE(print):
-            printf("%" PRIu32, (uint32_t)READ_LONG(READ_LONG(machine->PC + 1)));
+            printf("%" PRId32, (int32_t)READ_LONG(READ_LONG(machine->PC + 1)));
             INCR_PC(5);
             DISPATCH();
         CASE(printc):

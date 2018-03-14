@@ -214,11 +214,12 @@ static void ch(){
 static bool num(){
     if(consume(TOKEN_number)){
         char *end;
-        uint64_t num = strtoll(previousToken.string, &end, 10);
-        if(num > UINT32_MAX){
-            err("Long constant must be " ANSI_FONT_BOLD "<= %" PRIu32 ANSI_COLOR_RESET
-                    ", received " ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%" PRIu64 ANSI_COLOR_RESET, 
-                                                         UINT32_MAX, num);
+        int64_t num = strtoll(previousToken.string, &end, 10);
+        if(num > INT32_MAX || num < INT32_MIN){
+            err("Long constant must be " ANSI_FONT_BOLD "%" PRId32 ANSI_COLOR_RESET
+                    " <= constant <= " ANSI_FONT_BOLD "%" PRId32 ANSI_COLOR_RESET
+                    ", received " ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%" PRId64 ANSI_COLOR_RESET, 
+                                                         INT32_MIN ,INT32_MAX, num);
             token_print_source(previousToken, 1);
             hasErrors++;
             writeLong(0);

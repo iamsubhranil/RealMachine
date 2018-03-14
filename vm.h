@@ -18,7 +18,7 @@ typedef enum{
 typedef struct{
     uint8_t SR;
     uint32_t memSize;
-    uint32_t registers[8];
+    int32_t registers[8];
 #ifdef SANITIZE_ACCESS
     uint32_t AR; // Access register, to store the address of fault access
 #endif

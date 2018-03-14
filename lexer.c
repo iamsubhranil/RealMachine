@@ -102,8 +102,14 @@ static Token makeKeyword(){
 }
 
 static Token makeNumber(){
+    if(source[present] == '-')
+        present++;
+    uint32_t bak = present;
     while(isdigit(source[present]))
         present++;
+    if(present == bak){
+        return makeToken(TOKEN_unknown);
+    }
     return makeToken(TOKEN_number);
 }
 
@@ -114,7 +120,7 @@ static Token nextToken(){
     if(isalpha(source[present])){
         return makeKeyword();
     }
-    else if(isdigit(source[present])){
+    else if(isdigit(source[present]) || source[present] == '-'){
         return makeNumber();
     }
     switch(source[present]){

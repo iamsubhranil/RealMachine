@@ -1,0 +1,9 @@
+mov #-38289238, r0
+store r0, @data
+print @data
+mov #499034, r1
+add r1, r0
+store r0, @data
+print @data
+halt
+data : const #0

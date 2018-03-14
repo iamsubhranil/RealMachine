@@ -27,7 +27,7 @@ void debugRegister(VirtualMachine *machine, uint8_t index){
 
 #define preg(x) pcyn("r%" PRIu8, READ_BYTE(x))
 #define pmem(x) pylw("@%" PRIu32, READ_LONG(x))
-#define pimm(x) pmgn("#%" PRIu32, READ_LONG(x))
+#define pimm(x) pmgn("#%" PRId32, READ_LONG(x))
 #define pcmm() printf(",\t")
 
 
