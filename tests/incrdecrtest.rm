@@ -10,4 +10,4 @@ print @data
 printc @nw
 halt
 data : const #0
-nw : const #167772160
+nw : str "\n"

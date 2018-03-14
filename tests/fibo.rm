@@ -20,15 +20,5 @@ printc @nline
 mov #1, r5
 jmp @cont
 storage : const #0
-
-[ This is basically a nasty workaround,
- since printc now only prints a byte,
- we put the ascii equivalent of 'space'
- to the upper 8 bits, and fill the lower
- 24 bits with 0 ]
-
-sp : const #536870912
-
-[ Same for newline ]
-
-nline : const #167772160
+sp : str " "
+nline : str "\n"
