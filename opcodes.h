@@ -131,3 +131,11 @@ OPCODE(incr, 2, 4)
 //
 // decr r0
 OPCODE(decr, 2, 4)
+
+// Prints a number of bytes as characters
+// starting from a given memory offset
+// The following prints 23 consecutive
+// bytes starting from given offset
+//
+// prints @offset, #23
+OPCODE(prints, 9, 6)

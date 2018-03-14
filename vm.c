@@ -229,5 +229,13 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
             regl(READ_BYTE(machine->PC + 1))--;
             INCR_PC(2);
             DISPATCH();
+        CASE(prints):{
+            uint32_t offset = READ_LONG(machine->PC + 1);
+            uint32_t i = 0, len = READ_LONG(machine->PC + 5);
+            while(i < len){
+                printf("%c", READ_BYTE(offset + i));
+                i++;
+            }
+        }
     }
 }

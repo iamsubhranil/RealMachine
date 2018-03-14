@@ -422,6 +422,13 @@ static void statement_decr(){
     reg();
 }
 
+static void statement_prints(){
+    writeByte(OP_prints);
+    ref();
+    consume(TOKEN_comma);
+    imm();
+}
+
 #ifdef RM_ALLOW_PARSE_MESSAGES
 void statement_parseMessage(){
     printf("%s", presentToken.string);

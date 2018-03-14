@@ -302,6 +302,14 @@ void bc_write_op(uint8_t *memory, uint32_t *offset, int opcode, ...){
                         WRITE_LONG(*offset, val);
                         break;
                      }
+        case OP_prints:{
+                         uint32_t offs = va_arg(args, uint32_t);
+                         uint32_t bytes = va_arg(args, uint32_t);
+                         WRITE_LONG(*offset, offs);
+                         WRITE_LONG(*offset + 4, bytes);
+                         break;
+                       }
+
     }
     *offset += instructionLength[opcode];
     va_end(args);

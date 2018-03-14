@@ -1,2 +1,3 @@
+prints @s, #16
 halt
-str "Hello\nWorld!\"\t"
+s : str "\n\"Hello\tWorld!\"\n"
