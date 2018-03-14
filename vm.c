@@ -203,7 +203,7 @@ void rm_run(VirtualMachine *machine, uint32_t offset){
         CASE(halt):
             return;
         CASE(const): 
-        CASE(char):
+        CASE(str):
             // this should never be the case
             DISPATCH();
         CASE(nex):

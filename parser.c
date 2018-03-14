@@ -94,13 +94,13 @@ static void checkLabels(){
         if(labels[i].isInit == 0){
             err("Label '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "' used but not defined!",
                     labels[i].label.string);
-                token_print_source(labels[i].label, 1);
+            token_print_source(labels[i].label, 1);
             hasErrors++;
         }
         else if(labels[i].refCount == 0){
             warn("Label '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "' defined but not used!",
                     labels[i].label.string);
-                token_print_source(labels[i].label, 2);
+            token_print_source(labels[i].label, 2);
         }
         else{
             uint32_t bak = presentOffset;
@@ -153,9 +153,9 @@ bool match(TokenType type){
 }
 
 static const char* tokenStrings[] = { 
-    #define ET(x) #x,
-    #include "tokens.h"
-    #undef ET
+#define ET(x) #x,
+#include "tokens.h"
+#undef ET
 };
 
 bool consume(TokenType type){
@@ -199,15 +199,31 @@ static void reg(){
     }
 }
 
-static void ch(){
-    if(consume(TOKEN_aphostrophy) && consume(TOKEN_label)){
-        if(strlen(previousToken.string) > 1){
-            warn("More than one character quoted!");
-            token_print_source(previousToken, 2);
+static void str(){
+    if(consume(TOKEN_string)){
+        char *str = previousToken.string;
+        uint32_t i = 0;
+        while(str[i] != '\0'){
+            char ch = str[i];
+            if(ch == '\\' && str[i + 1] != '\0'){
+                switch(str[i+1]){
+                    case 'n':
+                        ch = '\n';
+                        i++;
+                        break;
+                    case 't':
+                        ch = '\t';
+                        i++;
+                        break;
+                    case '"':
+                        ch = '"';
+                        i++;
+                        break;
+                }
+            }
+            writeByte((int)ch);
+            i++;
         }
-        char c = previousToken.string[0];
-        writeByte((int)c);
-        consume(TOKEN_aphostrophy);
     }
 }
 
@@ -219,7 +235,7 @@ static bool num(){
             err("Long constant must be " ANSI_FONT_BOLD "%" PRId32 ANSI_COLOR_RESET
                     " <= constant <= " ANSI_FONT_BOLD "%" PRId32 ANSI_COLOR_RESET
                     ", received " ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%" PRId64 ANSI_COLOR_RESET, 
-                                                         INT32_MIN ,INT32_MAX, num);
+                    INT32_MIN ,INT32_MAX, num);
             token_print_source(previousToken, 1);
             hasErrors++;
             writeLong(0);
@@ -269,10 +285,10 @@ TWOREG(and)
 
 TWOREG(or)
 
-static void statement_not(){
-    writeByte(OP_not);
-    reg();
-}
+    static void statement_not(){
+        writeByte(OP_not);
+        reg();
+    }
 
 static void statement_lshift(){
     writeByte(OP_lshift);
@@ -346,14 +362,14 @@ static void statement_jmp(){
 }
 
 #define parseJump(x) \
-static void statement_##x(){ \
-    writeByte(OP_##x); \
-    reg(); \
-    consume(TOKEN_comma); \
-    reg(); \
-    consume(TOKEN_comma); \
-    ref(); \
-}
+    static void statement_##x(){ \
+        writeByte(OP_##x); \
+        reg(); \
+        consume(TOKEN_comma); \
+        reg(); \
+        consume(TOKEN_comma); \
+        ref(); \
+    }
 
 parseJump(jeq)
 
@@ -368,9 +384,9 @@ parseJump(jov)
 parseJump(jun)
 
 #define parseNoop(x) \
-static void statement_##x(){ \
-    writeByte(OP_##x); \
-}
+        static void statement_##x(){ \
+            writeByte(OP_##x); \
+        }
 
 parseNoop(clrsr)
 
@@ -380,12 +396,12 @@ parseNoop(halt)
 
 parseNoop(nex)
 
-static void statement_const(){
-    imm();
-}
+    static void statement_const(){
+        imm();
+    }
 
-static void statement_char(){
-    ch();
+static void statement_str(){
+    str();
 }
 
 static void statement_label(){
@@ -425,27 +441,27 @@ bool parse_and_emit(TokenList l, uint8_t **mem, uint32_t *memS, uint32_t offset)
 
     while(!match(TOKEN_eof)){
         switch(presentToken.type){
-            #define OPCODE(name, a, b) \
-                case TOKEN_##name: \
-                        consume(TOKEN_##name); \
-                        statement_##name(); \
-                        break;
-            #include "opcodes.h"
-            #undef OPCODE
-                case TOKEN_label:
-                    statement_label();
-                    break;
+#define OPCODE(name, a, b) \
+            case TOKEN_##name: \
+                               consume(TOKEN_##name); \
+            statement_##name(); \
+            break;
+#include "opcodes.h"
+#undef OPCODE
+            case TOKEN_label:
+                statement_label();
+                break;
 #ifdef RM_ALLOW_PARSE_MESSAGES
-                case TOKEN_parseMessage:
-                    statement_parseMessage();
-                    break;
+            case TOKEN_parseMessage:
+                statement_parseMessage();
+                break;
 #endif
-                default:
-                    err("Bad token : '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "'", presentToken.string);
-                    token_print_source(presentToken, 1);
-                    hasErrors++;
-                    advance();
-                    break;
+            default:
+                err("Bad token : '" ANSI_FONT_BOLD ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET "'", presentToken.string);
+                token_print_source(presentToken, 1);
+                hasErrors++;
+                advance();
+                break;
         }
     }
     *mem = memory;

@@ -145,9 +145,20 @@ static Token nextToken(){
         case ',':
             present++;
             return makeToken(TOKEN_comma);
-        case '\'':
+        case '"':
             present++;
-            return makeToken(TOKEN_aphostrophy);
+            start = present;
+            while(source[present] != '"' && source[present] != '\0'){
+                if(source[present] == '\\' && source[present+1] == '"')
+                    present++;
+                else if(source[present] == '\n')
+                    line++;
+                present++;
+            }
+            Token t = makeToken(TOKEN_string);
+            if(source[present] == '"')
+                present++;
+            return t;
         case '[':
             present++;
             while(present < length && source[present] != ']'){

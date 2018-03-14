@@ -87,14 +87,21 @@ OPCODE(const, 4, 5)
 // only to use in internals
 OPCODE(nex, 1, 0)
 
-// stores a character constant
-// lexer will scream if more than
-// one character is put between
-// the aphostrophy's
-// will store only one byte
+// stores a string constant at present
+// offset.
+// supported escape sequences :
+// \n : newline
+// \t : tab
+// \" : "
+// All characters will consume a byte
+// each, and escape sequences will consume
+// one byte as a whole
+// For example,
+// "Hello\tWorld!" will consume
+// 12 bytes
 //
-// char 'i'
-OPCODE(char, 1, 4)
+// str "My\nName\nIs\n : \t"
+OPCODE(str, 1, 3)
 
 // Copies the value stored at a memory offset
 // to another

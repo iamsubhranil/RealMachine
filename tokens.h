@@ -31,8 +31,8 @@ ET(label)
 // :
 ET(colon)
 
-// '
-ET(aphostrophy)
+// any consecutive sequence of characters
+ET(string)
 
 #ifdef RM_ALLOW_PARSE_MESSAGES
 // any string between { }

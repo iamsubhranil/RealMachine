@@ -131,7 +131,7 @@ void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
             pimm(*offset + 1);
             break;
         case OP_nex:
-        case OP_char:
+        case OP_str:
             pred("[Error] Code not executable!");
             break;
         case OP_mcopy:

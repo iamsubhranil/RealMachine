@@ -168,7 +168,7 @@ bool bc_save_to_disk(const char *outputFile, uint8_t *memory, uint32_t size){
 }
 
 void bc_write_op(uint8_t *memory, uint32_t *offset, int opcode, ...){
-    if(opcode == OP_const || opcode == OP_char)
+    if(opcode == OP_const || opcode == OP_str)
         (*offset)--;
     else
         memory[*offset] = opcode;
@@ -262,9 +262,30 @@ void bc_write_op(uint8_t *memory, uint32_t *offset, int opcode, ...){
                           WRITE_LONG(*offset, val);
                           break;
                       }
-        case OP_char:{
-                        uint8_t ch = va_arg(args, int);
-                        memory[*offset + 1] = ch;
+        case OP_str:{
+                        const char * str = va_arg(args, const char *);
+                        uint32_t i = 0;
+                        while(str[i] != '\0'){
+                            char ch = str[i];
+                            if(ch == '\\' && str[i + 1] != '\0'){
+                                switch(str[i+1]){
+                                    case 'n':
+                                        ch = '\n';
+                                        i++;
+                                        break;
+                                    case 't':
+                                        ch = '\t';
+                                        i++;
+                                        break;
+                                    case '"':
+                                        ch = '"';
+                                        i++;
+                                        break;
+                                }
+                            }
+                            memory[*offset + i] = ch;
+                            i++;
+                        }
                         break;
                      }
         case OP_mcopy:
