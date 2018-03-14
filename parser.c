@@ -387,12 +387,22 @@ static void statement_char(){
     ch();
 }
 
-void statement_label(){
+static void statement_label(){
     Token label = presentToken;
     advance();
     if(consume(TOKEN_colon)){
         declareLabel(label, presentOffset);
     }
+}
+
+static void statement_incr(){
+    writeByte(OP_incr);
+    reg();
+}
+
+static void statement_decr(){
+    writeByte(OP_decr);
+    reg();
 }
 
 #ifdef RM_ALLOW_PARSE_MESSAGES

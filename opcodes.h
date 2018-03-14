@@ -112,3 +112,15 @@ OPCODE(rcopy, 3, 5)
 //
 // jmp @offset
 OPCODE(jmp, 5, 3)
+
+// Increments the value stored
+// at a register by 1
+//
+// incr r0
+OPCODE(incr, 2, 4)
+
+// Decrements the value stored
+// at a register by 1
+//
+// decr r0
+OPCODE(decr, 2, 4)

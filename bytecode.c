@@ -194,6 +194,8 @@ void bc_write_op(uint8_t *memory, uint32_t *offset, int opcode, ...){
             memory[*offset + 2] = va_arg(args, int);
             break;
         case OP_not:
+        case OP_incr:
+        case OP_decr:
             memory[*offset + 1] = va_arg(args, int);
             break;
         case OP_lshift:

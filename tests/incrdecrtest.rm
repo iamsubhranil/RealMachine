@@ -1,0 +1,13 @@
+mov #0, r0
+incr r0
+store r0, @data
+print @data
+printc @nw
+mov #0, r0
+decr r0
+store r0, @data
+print @data
+printc @nw
+halt
+data : const #0
+nw : const #167772160

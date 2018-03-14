@@ -75,6 +75,8 @@ void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
             preg(*offset + 2);
             break;
         case OP_not:
+        case OP_incr:
+        case OP_decr:
             preg(*offset + 1);
             break;
         case OP_lshift:
