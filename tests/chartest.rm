@@ -1,20 +1,3 @@
-printc @ch
-printc @ce
-printc @cl
-printc @cl
-printc @co
-printc @cs
-printc @cw
-printc @co
-printc @cr
-printc @cl
-printc @cd
+prints @ch, #14
 halt
-ch : char 'H'
-ce : char 'e'
-cl : char 'l'
-co : char 'o'
-cs : char 'o'
-cw : char 'W'
-cr : char 'R'
-cd : char 'd'
+ch : str "\nHello World!\n"
