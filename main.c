@@ -16,6 +16,8 @@
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #ifdef DEBUG
 
@@ -28,6 +30,12 @@ static void printTime(clock_t start, clock_t end, const char *job){
 #endif
 
 static char* read_whole_file(const char* fileName){
+    struct stat statbuf;
+    stat(fileName, &statbuf);
+    if(S_ISDIR(statbuf.st_mode)){
+        err("Given argument is a directory!");
+        return NULL;
+    }
     char *buffer = NULL;
     long length;
     FILE *f = fopen(fileName, "rb");
@@ -35,6 +43,9 @@ static char* read_whole_file(const char* fileName){
         fseek(f, 0, SEEK_END);
         length = ftell(f);
         fseek(f, 0, SEEK_SET);
+#ifdef DEBUG
+        dbg("Buffer allocated of length %ld bytes", length + 1);
+#endif
         buffer = (char *)malloc(length + 1);
         if(buffer){
             fread(buffer, 1, length, f);

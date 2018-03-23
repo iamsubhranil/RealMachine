@@ -478,9 +478,13 @@ bool parse_and_emit(TokenList l, uint8_t **mem, uint32_t *memS, uint32_t offset)
                 break;
         }
     }
+    checkLabels();
+    if(*memS == memSize){
+        err("No valid statement found in the source!");
+        hasErrors++;
+    }
     *mem = memory;
     *memS = memSize;
-    checkLabels();
     if(hasErrors){
         err("Compilation failed with " ANSI_FONT_BOLD  ANSI_COLOR_RED "%" PRIu32 ANSI_COLOR_RESET " errors!", hasErrors);
         return false;
