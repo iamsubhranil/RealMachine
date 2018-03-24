@@ -37,7 +37,7 @@ void debugInstruction(uint8_t *memory, uint32_t *offset, uint32_t size){
         return;
     }
     printf(ANSI_FONT_BOLD);
-    pblue("%04" PRIu32 "\t", *offset);
+    pblue("%06" PRIu32 "\t", *offset);
     Code opcode = (Code)memory[*offset];
 
     uint8_t numInstructions = 0;

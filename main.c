@@ -225,6 +225,12 @@ execute:;
 #ifdef DEBUG
             uint32_t offset = 0;
             dbg("===== %s chunk =====\n", binaryData.size == 0 ? "Compiled" : "Read");
+            pblue( ANSI_FONT_BOLD "\nOffset\t");
+            pgrn(ANSI_FONT_BOLD "Opcode\t");
+            pylw( ANSI_FONT_BOLD "Arguments\n");
+            pblue( ANSI_FONT_BOLD "======\t");
+            pgrn( ANSI_FONT_BOLD "======\t");
+            pylw( ANSI_FONT_BOLD "=========\n");
             while(offset < machine->memSize && machine->memory[offset] != OP_nex)
                 debugInstruction(machine->memory, &offset, machine->memSize);
             printf("\n");
