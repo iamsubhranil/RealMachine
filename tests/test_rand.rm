@@ -1,0 +1,23 @@
+{
+[Info] This is a parse time message!
+}
+mov #0, r0
+(
+[Info] This is a scan time message!
+)
+[
+This is a comment
+]
+mov #1, r1
+mov #100000000, r2
+jgt r0, r1, @incrb
+incra : incr r0
+jmp @loopa
+incrb : decr r2
+jmp @loopb
+loopa : jlt r0, r2, @incra
+loopb : jlt r0, r2, @incrb
+store r0, @var
+print @var
+halt
+var : const #0
